@@ -1,0 +1,851 @@
+Flink
+    1. Flink 是什么
+        flink 是一个框架， 是一个分布式处理引擎， 用于对无界和有界数据流进行状态计算
+    2. 为什么选择Flink
+        1. 流数据真实反应了我门的生活方式
+        2. 传统的数据架构是基于有限的数据集的
+        3. 我们的目标  低延迟， 高吞吐， 结果的准确性和好的容错性
+    3. 哪些行业需要处理流数据
+        1. 电商和市场营销
+            数据报表，广告投放， 业务流程需要
+        2. 物联网
+            传感器实时数据采集和显示，实时报警，交通运输业
+        3. 电信业
+            基站流量调配
+        4. 银行和金融业
+            实时结算和通知推送，实时监测异常行为
+    4. Flink 的特点
+        1. 事件驱动 方式处理， 
+    
+    5. 基于流的处理世界观
+        1. 在flink 世界 中，把一切当作流处理，流分为有界流和无界流
+    6. 分层API
+        1. sql 的api
+        2. DataStream Api
+        3. Process Function 
+    7. flink 的其他特点
+        1. 支持事件时间 和处理时间
+        2. 精确一次的状态一致性保证
+        3. 低延迟，每秒处理数百万个事件，毫秒延迟
+        4. 与众多常用存储系统连接
+        5. 高可用 动态扩展，实现7 * 24 小时全天运行
+    8. flink spark-streaming  的区别
+        1. 流 / 微批处理
+        2. 数据模型
+            RDD 模型
+            基本数据模型 数据流 以及事件 序列
+        3. 运行架构
+            将DAG 划分为不同stage，一个完成后计算下一个
+            flink 是标准流程执行模式，一个事件在一个节点处理完后可以直接进下一个节点进行处理拉
+
+flink 入门操作
+    1. maven 创造项目 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-java</artifactId>
+            <version>1.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-streaming-java_2.12</artifactId>
+            <version>1.10.1</version>
+        </dependency>
+    </dependencies>
+    2. 编写 wordcount 程序
+        1. 创建执行环境 ExectionEnvment
+        2. 从文件读取数据  处理的数据类型 DateSet
+        3. 对数据集进行处理
+    3. 编写 流处理执行环境
+        1. 创建流处理执行环境 StreamExectuionEnvirome
+        2. 获取数据源 处理数据类型 DataStream
+        3. 基于数据流进行转换计算
+        4. 执行 任务 
+        setparallelism 设置线程数
+    4. 使用流失远
+        使用nc 处理 监听 nc lc [port]
+    5. 使用 parameter tool 工具从程序启动参数中提取配置
+        ParmeterTool.fromArgs(args)
+        String host = parameterTool.get("host");
+        --host ddd
+        --port fff
+
+部署flink 方式
+    下载tar .gz https://archive.apache.org/
+    选择对应的版本 我下载的是   flink-1.10.1-bin-scala_2.11.tgz   
+    然后到服务器解压 开始操作
+    进入flink 目录 
+    1. start-cluter.sh 集群启动
+    2. flink 命令 提交作业使用 状态 取消作业
+    3. flink-conf.yml flink 主要文件
+    4. masters 管理者 配置
+    5. slaves task 工作者
+    配置方式
+        1. 配置 flink-conf.yaml jobmanager.rpc.address haddop
+        2. 修改laves 文件 hadoop2 hadoop3
+        3. 分发给另外两天机器
+        4. 启动 start-cluster.sh
+    standlone
+        直接启动即可
+    页面访问
+        localhost:8081
+    命令行提交
+        flink run 
+            -c com.lmx.wordCount 
+            -p 3
+            /flinword.jar
+    命令行 取消job
+        flink cancel jobId
+    查找 jobId
+        flink list
+
+Yarn 方式 提交命令
+    以Yarn 方式提交到 flink 任务
+    两种方式
+        Session-cluster
+            首先在 yarn 上获取一个空间集群，以后的任务就在这个上面执行
+            所有的资源全部共享，如果资源不够，需要等待资源释放才能执行
+        Per-Job-Claster
+            一个job 会对应一个集群，每提交一个作业会根据自身的情况，都会单独向yarn申请资源，直到作业执行完成，一个作业的失败与否并不会影响下一个作业的正常提交和运行，独享Dispatcher和ResourceManager，按需接受资源申请，适合规模大长时间的运行作业
+    启动方式
+        1. 启动hadoop 集群
+        2. 启动yarn session yarn-session.sh -n 2 -s 2 -jm 1024 -tm 1024 test -d
+        3. 提交job 方式一样
+        4. 取消 yarn application --kill job_id
+    PerJobCluster 方式启动  
+            flink run  -m yarn-cluster
+            -c com.lmx.wordCount 
+            -p 3
+            /flinword.jar
+
+Flink 运行架构
+    1.Flink 运行时的组件
+        1.作业管理前 jobmanager
+            · 控制一个应用程序执行的主进程，也就是说，每个应用都会被一个不同的 jobmanager 所控制执行
+            · jobManager 会先接受到执行的应用程序，这个用程序包括 作业图（JobGrph），逻辑数据流图（logical dataflow graph）
+            和打包了所有的类，库和其他资源的JAR包
+            · jobManager 会把jobGraph转成成一个物理层面的数据流图，这个图被叫做执行图（ExcutionGraph），包含了所有可以并发执行的任务
+            · JobManager 会向资源管理器（resourceManager）请求执行任务必要的资源，也就是任务管理前（TaskManager）上的插槽（slot）。一旦它获取到了足够的资源，
+            就会执行图分发到真正运行他们的TaskManager上，而在运行过程中，JobManager会负责所有需要中央协调的操作，比如说检查点（checkpoints）的协调
+        2. 任务管理器 TaskManager
+            1. Flink中的工作进程，通常在flink中会有多个TaskManger运行，每一个TaskManager都包含了一定数量的插槽，
+                插槽的数量限制了TaskManager能执行的任务数量
+            2. 启动之后，TaskManager会向资源管理器注册它的插槽；收到资源管理器的指令后，TaskManager就会将一个或者多个插槽提供给
+                JobManger调用。JobManager就可以向插槽分配任务 tasks 来执行了
+            3. 在执行过程中，一个TaskManager可以跟其他运行同意应用程序的TaskManager交换数据。
+        3. 资源管理器 ResourceManager
+            · 主要负责管理任务管理器TaskManager的插槽（slot），
+                TaskManager查抄的Flink中定义的处理资源单元
+            · Flink为不同的环境和资源管理工具提供了不同的资源管理器，比如YARN,Mesos，K8s，以及standalone部署
+            · 当JobManger申请插槽资源时，ResourceManager会将有空闲插槽的TaskManager分配给JobManager，
+            如果ResourceManager没有足够的插槽来满足JobManager的请求，它还可以向资源提供平台发起绘画，以提供
+            启动TaskMnager进程容器
+        4. 分发器 Dispacher
+            · 可以夸作业运行，它为应用提交提供了REST接口
+            · 当一个应用被提交执行时，分发器就会启动并将应用移交给一个JobManager
+            · Dispatcher 也会启动一个Web UI ，用来方便地展示和监控作业执行新信息
+            · Dispatcher 在架构中可能并不是必须的，这取决于应用提交运行的方式
+    2.任务提交流程
+        看图
+    3.任务调度原理
+        看图
+            思考 
+                1. 怎样实现并行计算
+                    实际就是多个task 并行的执行 就是实现了并行计算，通过设置并行度 实现并行的计算
+                    不同的任务分部不同的线程，不同的线程需要计算机资源，这些资源是slot 分配的
+                2. 并行任务， 需要占用多少slot
+                    slot 是根据当前最大并行度来 设置的
+                3. 一个流处理程序，到底包含了多少个任务
+            
+    4. 并行度
+        一个特定算子任务（subtask）的个数被称之为其并行度（parallelism）
+        一般情况下，一个stream的并行度，可以认为就是其所有算子中最大的并行度
+    
+    5. TaskManager 和slots
+        可以指定 slots 共享组 slotSharingGroup() 共享组默认的default 
+        slots 组 每个最大并行处 的和 就是 多少个 slots
+        如何设置 slots 呢，可以根据当前cpu 的核数来设计
+        Flink 中每一个TaskManager都是一个JVM进程，它可能会在独立的线程上执行一个或多个任务
+        为了控制一个TaskManager能接受多少个task，TaskManager通过task slot 来进行控制（一个TaskManager至少有一个slot）
+    
+    6. 并行子任务的分配
+        每个子任务的最大的并行度，就是slot的数量
+        TaskManager的数量 看CPU 的核心数量
+        修改并行度数 flink-conf.yaml 统一配置  flink -p 2 提交时候的配置  env.setParallelism(2)代码里配置
+    
+    10. 程序与数据流（DataFlow）
+        所有的flink程序都是由三部分组成的： Source, Transformation 和 Sink
+        Source 负责读取数据源， Transformation利用各种算子进行处理加功，Sink负责输出
+
+        1. 在运行是，Flink上运行的程序会被映射成逻辑数据流 ，它包含了这三部分
+        2. 每个dataflows 以一个或多个sources 开始以一个或多个sink结束。dataflow类似于任意的有向无环图
+        3. 在大部分情况下，程序中的转换运算（transformations） 跟dataflow中的算子（opeerator）是 一一对应的关系
+    
+    11. 执行图
+        Flink 中的执行图可以分成四层 StreamGraph -> JobGraph -> ExecutionGraph -> 物理执行图
+        StreamGraph: 是根据用户通过Stream API编写的代码生成最初的图。用来标识程序的拓扑结构。
+        JobGraph: StreamGraph 经过优化后生成了JobGraph，提交给JobManager的数据结构，主要的优化为，将多个符合条件的节点chain在一起作为一个节点
+        ExecutionGraph JobManager根据JobGraph生成ExecutionGraph。ExecutionGraph是JobGraph的并行化版本，是调度层最核心的数据结构
+        物理执行图 JobManager 根据ExecuionGraph 对Job进行调度后，在各个TaskManager上部署Task后形成的图，并不是一个具体的数据结构
+
+    12. 数据传输形式
+        一个程序中，不同的算子可能具有不同的并行度
+        算子之间传输数据的形式可以是 one-to-one（fowarding）的模式也可以是redistributing的模式，具体是哪一种形式，屈居于算子的种类
+        one-to-one：stream维护着分区以及元素的哥数以及顺序跟source算子的子任务生产的元素的个数，顺序相同。map，filter，flatmap等算子都是one-to-one的对应关系
+        Redistibuting：stream的分区会繁盛改变。每一个算子的子任务依据所选择的transformation发送数据到不同的目标任务。例如：keyBy基于hashCode重分区，儿broadcast和rebalance会随机重新分区，这些算子
+            都会引起redistribute过程，而redistribute过程就类似于sprak中shuffle过程。
+    
+    13. 任务链
+        Flink 采用了一种称为任务链的优化技术，可以在特定条件下减少本地通信开销。为了满足任务链的要求，必须将两个或多个算子设为相同的并行度，并通过本地转发（local fow ward）的方式进行连接
+        相同并行度的one-to-one 操作，Flink这样相连的算子链接在一起形成一个task，原来的算子成为里面的subtask
+        并行度相同、并且是one-to-one操作，两个条件缺一不可
+
+    14. Flink 流处理 API
+        enviroment -> source ->trasnformation -> sink
+        1. Environment
+            getExecutionEnvironment
+                创建一个执行环境，标识当前执行程序的上下文，如果程序是独立调用的，则此方法返回本地执行环境；如果从命令行客户端调用程序以提交到集群，则此方法返回此集群的执行环境，
+                也就是说，getExecutionEnvironment会根据查询运行的方式决定返回什么样的运行环境，最常用的一种创建执行环境方式
+            设置并行度 可以使用 env.setparallelism
+            createLocalEnvironment 创建本地执行环境，需要在使用时指定默认的并行度
+            createRemoteEnvironment 远程执行环境，将jar包提交到远程仓库 需要指定jobManager的IP和端口号，并指定要在集群中运行的jar包
+            createRemoteEnvironment("ip",6123,"//helloCount.jar")
+        2. Source
+            从集合取数据
+            env.fromCollection(Arrays.asList(对象1,对象2))
+            从文件读取数据
+            从KAFKA读取数据
+            从自定义数据源读取数据
+            详细 查看代码
+        
+        3. Transform
+            1. map  基本转换算子
+            2. flatmap 基本转换算子
+            3. filter 基本转换算子
+            4. keyby  dataStream -> KeyedStream 逻辑低将一个溜拆分成不相交的分区，每个分区包含具有相同key的元素，在内部以bash的形式实现的
+                一些的聚合操作
+                4.1 滚动聚合算子
+                    1. sum()
+                    2. min()
+                    3. max()
+                    4. minBy()
+                    5. maxBy()
+                    6. reduce
+            7. split 和 select
+                切分 选择 在继续处理 
+            8. Connect 和CoMap
+                合并两条流  得到一个 ConnectedStream  在使用哦个 CoMap.CoFlatMap 将两条流合并
+                
+            9. Union 
+                合并多条一样的流 DataStream ->DataStream
+            10. 其他重分区 方式
+                broadcast 广播
+                shuffle 洗牌 随机分配到下游子数据
+                forward 直通 到当前分区
+                rebalance 均匀的分部到下游的所有数据里
+                global 所有数据发到下游的第一个数据里
+
+    15. 支持的数据类型
+        1. 支持所有的1java 和scala 的基础数据数据类型           
+        2. 支持 java 和scala Tuples 元组类型
+        3. scala 样例类
+        4. java POJOS 简单对象 ，必须要空参的构造方法， 必须有 get set 方法
+        5. 其他 集合类型 枚举类型 
+    
+    16. 实现UDF 函数， 更详细的控制流
+        1. Flink 暴露了所有udf函数的接口（实现方式为接口或抽象类）。里如 MapFunction.FilterFunction,ProcessFuntion等等
+        2. 使用lamad 方式进行传入
+        3. 富函数 Rich Functions
+            Rich Functiong 是 DataStream Api 提供的一个函数类的接口，所有的Flink函数类都有其Rich版本，它与常规函数的不同在于，可以获取运行环境的上下文，
+            并拥有一些生命周期方法，所以可以实现更复杂的功能
+            RichMapFunction, RichFlatMapFunction, RichFilterFunction
+            Rich Function 有个生命周期的概念，典型的生命周期方法有
+            open() 是rich function的初始化方法，当一个算子里如map或者filter被调用之前open() 会被调用
+            close()方法是生命周期种的最后一个调用的方法，坐一些清理工作
+            getRuntimeContext()提供了函数的 RuntimeContext 执行时的一些信息 
+    
+    17. Sink 操作
+        使用 addSink 方法， 可以使用官方 也可以使用 Bahir 方式
+        也可以使用自己的方式  自定义方式
+    
+    18. Flink Window Api
+        1. window 的概念
+            一般真实的流都是无界的，怎样处理无界的数据？
+            可以把午先的数据流进行切分，得到有限的数据集进行处理 ---也就是得到了有界流
+            窗口就是将午先流切割为有限流的一种方式，它会将流数据分发到有限大小的捅中进行分析
+        2. window 窗口的类型
+            时间窗口
+                滚动时间窗口 （Tumbling Windows）
+                    将数据一句固定的窗口长度怼数据进行划分
+                    时间对齐，窗口长度固定，没有重叠
+                滑动时间窗口 （Sliding Windows）
+                    滑动窗口是固定窗口的更广义的一种形式，滑动窗口由固定窗口长度和滑动间隔组成
+                    窗口长度固定，可以有重叠
+                会话窗口 （Session Windows）
+                    由一系列事件组合一个指定事件长度的timeout间隙组成，也就是一段事件没有接受到新数据救回生成新的窗口
+                    时间无对齐
+            计数窗口
+                滚动计数窗口
+                    就是按计数器来，3个数一个窗口 这种
+                滑动计数窗口
+        3. window Api
+            窗口分配器 ---- window()方法
+            我们可以用 window()定义一个窗口，然后基于这个widow去做一些整合或者掐处理操作，注意window()方法必须在keyBy之后才能用
+            Flink 提供了更加简单的 timeWindow 和countWinodw方法 ，用于定义事件窗口和计数窗口
+
+        4. window function 窗口函数
+            window function 定义了要对窗口中收集的数据的计算操作
+            可以分为两类
+                增量聚合函数（incremental aggregation functions）
+                    每条数据到来据进行计算，保持一个简单的状态
+                    ReduceFunction,AggregateFunction
+                全窗口函数 full window functions
+                    先把窗口所有数据手机起来，等到计算的时候会便利所有的数据
+                    ProcessWindowFunction, WindowFunction
+
+        5. 其他可选API
+            1. trigger（） --- 触发器
+                定义window什么时候关闭，触发计算并输出结果
+            2. evictor() --- 移除器
+                定义移除某些数据的逻辑
+            3. allowedLateness()  -- 允许处理迟到的数据
+            4. sideOutputLateData()  -- 将迟到的数据放入侧输出流
+            5 getSideOutPut()  --- 获取侧输出流
+    
+    19. Flink 中的时间语义
+        时间语义
+            考虑数据的时间问题，应该考虑的创建时间，真实的时间来处理数据，才能保证数据的最后计算的准确性，也就引申出了时间语义的问题
+            处理乱序数据的影响
+            Envent Time 事件创建时间
+            Ingesion Time 数据进入Flink的时间
+            Processing Time 执行操作算子的本地系统时间，与机器无关
+        设置Event Time
+            我们可以直接在代码中，怼执行环境调用 setStreamTimeCaharactersic  方法，设置流的时间特性
+            具体的事件，还需要从数据中提取时间戳
+            env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+            .assignTimestampsAndWatermarks() 设置哪个是事件时间
+        水位线（Watermark）
+            怎样避免乱序数据带来的计算不正确
+            遇到一个时间戳达到了窗口关闭的事件，不应该立刻出发窗口计算，而是等待一段事件，等迟到的数据赖了在关闭窗口
+            Watermark 是一种衡量 Event Time 进展的机制，可以设定延迟触发
+            Watermark 是用于处理乱序事件的，而正确的处理乱序事件，通常用Watermark 机制结合windows 来实现
+            数据流中的Watermark 用于标识timestamp 小于 Watermark的数据，都已经达到了，因此，windows的执行也是由Watermark触发的
+            watermark 用来让程序自己平衡延迟和结果正确性
+            watermark 是一条特殊的数据记录
+            watermark 必须单调递增，以确保任务的事件时间时钟在向前推进，而不是在后退
+            watermark 与数据的时间戳相关
+            个人理解： watermark 是一个专门设定什么时候输出输出窗口的标记为，然后等到每个watermark 的到来，对应的窗口关闭，输出结果
+            需要对数据有一定了解，最大的乱序时间是相邻两个数据的时间差
+            
+        watermark 的传递，引入和设定
+            上游的watermark 要转接到下游，每个当前阶段会选出当前接收到的所有watermark 中最小直 传递给下游，每个阶段都会有转么 partitionWatermark 分区的watermark 用来接收上游发下来的。
+            如何设定
+            在Flink中，watermark由应用程序开发人员生成，这通常需要对相应的领域有一定的了解
+            如果waermark设置的延迟太久，收到的结果的速度可能就会很慢，解决办法是在水位线到达之前输出一个近似结果
+            而如果watermark到达的太造，则可能收到错误结果，不过flink处理迟到数据的机制可以解决这个问题
+
+    20. Flink的状态管理
+        1. Flink的状态
+            由一个任务维护，并且用来计算某个结果的所有数据，都属于这个任务的状态
+            可以认为状态就是一个本地变量，可以被业务逻辑访问
+            Flink 会进行状态管理，包括状态的一致性、故障处理以及高效存储和访问，以便开发人员可以专注于应用程序的逻辑
+            在Flink 中，状态始重与特定算子相关联
+            为了使运行时的Flink 了解算子的状态，算子需要预先注册其状态
+            总的说来，有两种类型的状态
+            算子状态 / 键控状态
+        2. 算子状态 （Operatior State）
+                算子状态的作用范围限定为算子任务
+                算子状态的作用范围限定为算子任务，由同一并行任务所处理的所有数据都可以访问到相同的状态
+                状态对于同一子任务而言是共享的
+                算子状态不能由相同或不通算子的另一个子任务访问
+            算子状态的数据结构
+                列表状态
+                    将状态标识为 一组数据列表
+                联合列表状态
+                    也将标识为数据的列表，它与常规列表状态的区别在于，在发生故障时，或者从保存点（savepoint）启动应用程序时如何恢复
+                广播状态
+                    如果一个算子有多项任务，而它的每项任务状态又都相同，那么这种特殊情况最适合应用广播状态。
+        3. 键控状态 （Keyed state）
+                根据输入数据流中定义的键 来维护和访问
+                键控状态是根据输入数据流中定义的键（key）来维护和访问的
+                Flink为每个key 维护一个状态实例，并将局有限相同键的所有数据，都分区到同一个算子任务中，这个任务会维护和处理这个key对应的状态
+                当任务处理一条数据时，它会自动将状态的访问范围限定为当前的数据的key
+            键控状态数据结构
+                键状态（value state）
+                    将状态表示为单个的值
+                列表状态（List state）
+                    将状态表示为一组数据的列表
+                映射状态（Map State）
+                    将状态表示为一组key-value 对
+                聚合状态（Reducing state & Aggregating State）
+                    将状态表示为一个用于聚合操作的列表
+        4. 状态后端 （state Backends）
+            每传入一条数据，有状态的算子任务都会读取和更新状态
+            由于有效的状态访问对于处理数据的低延迟至关重要，因此每个并行任务都会在本地维护其状态，以却表快速的状态访问
+            状态的存储、访问以及维护，由一个可插入的组件决定，这个组件就叫做状态后端
+            状态后端主要负责两件事：本地的状态管理，以及将检查点（checkpoint）状态写入远程存储
+            
+            选择一个状态后端
+                1. MemoryStateBackend
+                    内存级的状态后端，会将键控状态作为内存中的对象进行管理，将它们存储在TaskManager的JVM堆上，而将checkpoint存储在JobManager的内存中
+                    特点：快速、低延迟，但不稳定
+                2. FsStateBackend
+                    将 checkpoint 存到远程的持久化文件系统（FileSystem）上，而对于本地状态，跟MemoryStateBackend一样，也会存在TaskManager的JVM堆上
+                    同时拥有内存级的本地访问速度，和更好的容错保证
+                3. RocksDBStateBackend
+                    将所有状态序列化后，存入本地的RocksDB中存储
+            
+            在flink 上面配置状态后端
+                flink.yml  state.backend: filesystem
+                state.backend.incremental  增量化的存储
+                jobmanager.execution.failover-strategy  区域化 存储
+
+            在代码里设置状态后端
+                env.setstateBackend(可以使用flink 提供的几个后端类型)
+        
+    21. ProcessFunction Api (底层API)
+        我们之前学习的 转换算子 是无法访问事件的时间戳信息和水位线信息的。而这在一些应用场景下，极为重要。例如MapFunction 这样的map 转换算子就无法访问时间戳或者当前事件的事件时间
+        基于此，DataStream API提供了一系列的Low-Level转换算子。可以访问时间戳、watermark 以及注册定时事件。还可以输出特定的一些事件，例如超时事件等。ProcessFunction 用来构建事件驱动的应用以及实现自定义的业务逻辑（使用之前windows
+            函数和转换算子无法实现）。 例如，Flink SQL 就是使用Process Function 实现的。
+        Flink 提供了8个 Process Function
+            ProcessFunction    
+            KeyedProcessFunction
+            CoProcessFunction
+            ProcessJoinFunction
+            BroadcastProcessFunction
+            ProcessWindowFunction
+            ProcessAllWindowFunction
+
+        侧输出流
+            大部分的DataStream API 的算子的输出是单一输出，也就是某种数据类型的流。除了split 算子，可以将一条流分成多条流，这些流的数据类型也都相同。processfunction的side outputs 功能可以产生多条流，并且这些流的数据类型可以不一样。
+                一个side output 可以定义为 OutputTag[X]对象，X是输出流的数据类型，process function 可以通过 Context 对象发射一个事件到一个或者多个side outputs。
+
+    22. 容错机智
+        一致性 检查点 （checkpoint）
+            Flink 故障恢复机制的核心，就是应用状态的一致性检查点
+            有状态流应用的一致检查点，其实就是所有任务的状态，在某个时间点的一份拷贝（一份快照）；这个时间点，应该是所有任务都恰好处理完一个相同的输入数据的时候
+        从检查点恢复状态
+            在执行流应用程序期间，Flink会定期保存状态的一致检查点
+            如果发生故障时，flink 将会使用最近的检查点来一致回复应用程序的状态，并重新启动处理流程
+        Flink 检查点算法
+            一种简单的想法
+                暂时停应用，保存状态到检查点，在重新恢复应用
+            flink的改进实现
+                基于 Chandy-Lamport算法的分布式快照
+                将检查点的保存和数据处理分离开，不暂停整个应用
+            Flink检查点算法
+                检查点分界线（checkpoint barrier）
+                flink的检查点算法用到了一种称为分界线（barrier）的特殊数据形式，用来把一条流上数据按照不同的检查点分开
+                分界线之前到来的数据导致的状态更改，都会被包含在当前分界线所属的检查点中；而基于分界线之后的数据导致的所有变更，就会被包含在之后的检查点中
+                现在是一个有两个输入流的应用程序，用并行的两个Source 任务来读取
+                JobManager会向每个source任务发送一条带有心机检查点ID的消息，通过这种方式来启动检查点
+                数据源将它们的状态写入检查点，并发出一个检查点barrier
+                状态后端在状态存入检查点之后，会返回通知给source任务，source任务就会向jobManager确认检查点完成
+                分界线对齐：barrier向下游传递，sum任务会等待所有输入分区的barrier到达
+                对于barrier已经到达的分区，继续到达的数据会被缓存
+                而barrier尚未到达的分区，数据会被正常处理
+                sink任务向JobManager确认状态保存到checkpoint完毕
+                当所有任务都确认已成功将状态保存到检查点时，检查点就真的完成了
+        保存点（save points）
+            Flink 还提供了可以自定义的镜像保存功能，就是保存点（savepoints）
+            原则上，创建保存点使用的算法与检查点完全相同，因此保存点可以认为就是具有一些额外元数据的检查点
+            flink不会自动创建保存点，因此用户（或者外部调度程序）必须明确地触发创建操作
+            保存点是一个强大的功能。除了故障恢复外，保存点可以用于：有计划的手动备份，更新应用程序，版本迁移，暂停和重启应用，等等
+        检查点的配置
+            env.enableCheckpointing()  里面可以给一个时间间隔
+            高级配置
+            env.getCheckPointConfig().setCheckPointMode()// 处理机制
+            .setCheckpointTimeOut 超时时间  1分钟内要求完成，否则就丢掉
+            .setMaxConcurrentCheckpoint   最大可以处理几个
+            .setMinPauseBetweenCheckpoint  最小暂停时间，前一个保存完成 到下一个触发，防止一直checkpoint 不去处理数据
+            .setPreferCheckpointForRecovery boolean) true 使用检查点作为修复 false 发生故障时，找最近的检查点或者保存点进行恢复
+            .setTolerableCheckpointFailureNumber 容忍 失败多少次
+            重启策略的配置
+            env.setRestartStrategy() 
+                RestartStrategies.fixeDelayRestart（3,1000） 固定延迟重启 每个10秒 尝试重启 最多重启3次
+                    failureRateRestartStrategyConfiguration 失败半重启 在规定时间内 尝试重启，
+
+    23. 状态一致性
+        状态一致性
+            有状态的流处理，内部每个算子任务都可以有自己的状态
+            对于流处理器内部来说，所谓的状态一致性，其实就是我们所说的计算结果要保证准确
+            一条数据不应该丢失，也不应该重复计算
+            在遇到故障时可以恢复状态，恢复以后的重新计算，结果应该也是完全正确
+            
+            状态一致性的分类
+                AT-most-once(最多一次)
+                当任务故障时，最简单的做法是什么都不干，既不恢复丢失的状态，也不重播丢失的数据，AT-most-once语义的含义是最多处理一次事件
+                AT-LEAST-ONCE(至少一次)
+                在大多数的真实应用场景，我们希望不丢失事件。这种类型的保障称为at-last-once,意思是所有的事件都要处理，而一些事件还可以被处理多次。
+                EXACTLV-ONCE（精确一次）
+                恰好处理一次是最严格的保证，也是最难实现的。恰好处理一次语义不仅仅意味着没有丢失事件，还以为着针对每一个数据，内部状态仅仅更新一次
+
+        一致性检查点（checkpoint）
+            Flink 使用了一种轻量级快照机制--检查点（checkpoint）来保证exactly-once语义
+            有状态流应用的一致检查点，其实就是：所有任务的状态，在某个时间的一份拷贝（一份快照）。而这个时间点，应该是所有任务都恰好处理完一个相同的输入数据的时候
+            应用状态的一致检查点，是Flink故障恢复机制的核心
+
+        端到端（end-to-end）状态一致性
+            目前我们看到的一致性保证都是由流处理器实现的，也就是说都是在Flink流处理器内部保证的；而在真实应用中，流处理应用除了流处理器意外还包含了数据源（例如kafka）和输出到持久化系统
+            端到端的一致性保证，意味着结果的正确性贯穿了整个流处理应用的始终；每一个组件都保证了它自己的一致性
+            整个端到端的一致性级别取决于所有组件中一致性最弱的组件
+        端到端的精确一次（exactly-once）保证
+            内部保证 -- checkpoint
+            source 端 -- 可重设数据的读取位置
+            sink 端 -- 从故障恢复时，数据不会重复写入外部系统
+                幂等写入
+                    所谓幂等操作，是说一个操作，可以重复执行很多次，但只导致一次结果更改，也就是说，后面再重复执行就不起作用了 Key-ValuePairs
+                事物写入
+                    事物（Transaction）
+                        应用程序中一系列严密的操作，所有操作必须成功完成，否则在每个操作中所作的所有更改都会被撤销
+                        具有原子性 一个事物中的一系列操作要么全部成功，要么一个都不做
+                    实现思想 
+                        构建的事物对应着checkpoint，等到checkpoint真正的完成的时候，才把所有对应的结果写入sink系统中
+                    实现方式
+                        预写日志（Write-Ahead-Log, WAL）
+                            把结果数据先当成状态保存，然后再收到checkpoint完成的通知时，一次性写入sink系统
+                            简单易于实现，由于数据提前在状态后端中做了缓存，所以无论什么sink系统，都能用这种方式一批搞定
+                            DataStreamAPI提供了一个模板类 GenericWriteAheadSink,来实现这种事务性sink
+                            缺点：批处理 / 写入过程出错没办法处理
+                        两阶段提交（Two-Phase-Commit,2pc）
+                            对于每个checkpoint，sink任务会启动一个事物，并将接下来所有接收的数据添加到事物里
+                            然后将这些数据写入外部sink系统，但不提交它们 -- 这时只是预提交
+                            当它收到checkpoint 完成通知时，它才正式提交事物，实现结果的真正写入
+                            这种方式真正实现了 exactly-once，它需要一个提供事物支持的外部sink系统 flink 提供了 TwoPhaseCommitSinkFunction接口
+                            缺点：必须支持事物 
+        flink + kafka 端到端一致性保证                
+            内部 --- 利用checkpoint机制，把状态存盘，发生故障的时候可以恢复，保证内部的状态一致性
+            source -- kafka consumer 作为source，可以将偏移量保存下来，如果后续任务出现了故障，恢复的时候可以由连接器重置偏移量，重新消费数据，保证一致性
+            sink --- kafka producer 作为sink，采用两阶段提交sink，需要实现一个 TwoPhaseCommitSinkFunction
+            exactly-once 两阶段提交
+                JobManager 协调哥哥TaskManager进行checkpoint存储
+                checkpoint保存在StateBackend中，默认StateBackend是内存级的，也可以改为文件级的进行持久化保存
+                每个算子会对当前的状态做个快照，保存到状态后端
+                checkpoint机制可以保证内部的状态一致性
+                每个内部的transform任务遇到barrier时，都会把状态存到checkpoint里
+                sink 任务首先把数据写入外部kafka，这些数据都属于预提交的事物；遇到barrier时，把状态保存到状态后端，并开启新的预提交事物
+                当所有算子任务的快照完成，也就是这次的checkpoint完成时，JobManager会向所有任务发通知，确认这次checkpoint完成
+                sink任务收到确认通知，正式提交之前的事物，kafka中未确认数据改为已确认
+
+                完整提交步骤
+                    第一条数据来了之后，开启一个kafka的事物（transaction），正常写入kafka分区日志但标记为未提交，这就是预提交
+                    jobmanager触发checkpoint操作，barrier从source开始向下传递，遇到barrier的算子将状态存入状态后端，并通知jobmanager
+                    sink连接器收到barrier，保存当前状态，存入checkpoint，通知jobmanager，并开启下一阶段的事物，用于提交下个检查点的数据
+                    jobmanager收到素有任务的通知，发出确认信息，表示checkpoint完成
+                    sink任务收到jobmanager的确认信息，正式提交这段时间的数据
+                    外部kafka关闭事物，提交的数据可以正常消费
+
+    24. Table API 和 Flink SQL
+        Flink 对批处理和流处理，提供了统一的上层API
+        TableAPI是一套内嵌在java 和scala语言中的查询API，它允许以非常直观的方式组合来自一些关系运算符查询
+        Flink的SQL 支持基于实现了SQL标准的Apache Calcite
+        ProcessFunction -> DataStreamAPI -> SQL/TableAPI 
+
+        1.基本程序结构
+            tableEnv 创建执行结构
+            tableEnv.connect(...).createTemporaryTable("inputTable");
+            tableEnv.connect(...).createTemporaryTable("outputTable");
+            tableEnv.from("inputTable").select(...);
+            tableEnv.sqlQuery("sql....");
+            result.inerstInto("outputTable")
+        
+        2. 表（Table）
+            TableEnvironment 可以注册目录Catalog，并可以基于Catalog注册表
+            表（Table）是由一个 标识符（identifier）来指定的，由3部分组成 Catalog名，数据库名 和对象名
+            表可以是常规的，也可以是虚拟的（视图， View）
+            常规表 一般可以用来描述外部数据，比如文件，数据库表或消息队列的数据，也可以直接从DataStream转换而来
+            视图（View）可以从现有的表中创建，通常是的 tableAPI或者SQL 查询的一个结果集
+
+            表的查询 - Table API
+            Table API 是集成在Scala 和Java语言内的查询API
+            Table API 基于代表 表 的Table 类，并提供一整套操作处理的方法API；这些方法会返回一个新的Table对象，表示对输入表应用转换操作的结果
+            有些关系型转换操作，可以由多个方法调用组成，构成链式调用结构
+                Table users = tableEnv.from("users");
+                users.select("sss").filter("ddd");、
+            
+            创建表
+                String path = "path";
+                tableEnv.connect(new FileSystem().path(path))
+                        .withFormat(new Csv())
+                        .withSchema(new Schema()
+                                .field("name", DataTypes.STRING())
+                                .field("age", DataTypes.INT())
+                        ).createTemporaryTable("users");
+
+            更新模式
+                对于流式查询，需要声明如何在表和外部连接器之间执行转换
+                与外部系统交换的消息类型，由更新模式（Update Mode）指定
+                追加（Append）模式
+                    表只做插入操作，和外部连接器只交换插入（insert）消息
+                撤回（Retract）模式
+                    表和外部链接器添加（Add）和撤回Retract 消息
+                    插入操作 编码为Add消息 删除 编码为Retract 消息 更新编码为上一条的Retract和下一条的Add消息
+                更新插入（Upsert）模式
+                    更新和插入都被编码为Upsert 消息，删除编码为 Delete 消息
+
+            输出到mysql
+                可以创建Table 来描述Mysql中的数据 作为输入和输出
+                String sinkDDL= "create table jdbcOutputTable( id varchar(20) not null, cnt bigint not null" 
+                    + ")with(" + "'connector.type' = 'jdbc', 'conector.url' = 'jdbcLmysql://localhost:3306/test',"
+                    + "'connector.table' = 'users' , 'connector.driver' = 'com.mysql.jdbc.Driver' ,"
+                    + "'connector.username' = 'root' , 'connector.password' = 'root'";
+                tableEnv.sqlUpdate(sinkDDL);
+                aggResultSqlTable.insertInto("jdbcOutputTable");
+            
+            将Table 转换成 DataStream
+                表可以转换为 DataStream 或 DataSet，这样自定义流处理或批处理程序就可以继续在TableApi 或SQL查询的结果上运行了
+                表转换为DataStream 或 DataSet 时，需要指定生成的数据类型，既要将表每一行转换成的数据类型
+                表作为流式查询的结果，是动态更新的
+                转换有两种转换模式：追加（Append）模式和撤回（Retract）模式
+
+                追加模式
+                    用于表只会被插入 insert 操作更改的场景
+                    tableEnv.toAppendStream(resultTable, Row.class);
+                 撤回模式
+                    用于任何场景。 有些类似于更新模式中Retract模式，它只有insert和Delete两类操作
+                    得到的数据会增加一个Boolean类型的表示为（返回的第一个字段），用它表示到底是新增数据（insert），还是被删除的数据（Delete）
+                    tableEnv.toRetractStream(aggResultTable, Row.class);
+                
+            创建临时视图（Temporary View）
+                基于DataStream 创建临时视图
+                tableEnv.createTemporaryView("aaa", dataStream);
+                tableEnv.createTemporaryView("sensorView", dataStream, "id, name, age as a")
+                基于table 创建临时视图
+                tableEnv.createTemporaryView("Aaa", sensorTable);
+
+            查看执行计划
+                TableAPI 提供了一种机制来解释计算表的逻辑和优化查询计划
+                查看执行计划，可以通过TableEnvironment.explain(table) 方法或者TableEnvironment.explain()方法完成，返回一个字符串，描述三个计划
+                优化的逻辑查询计划
+                优化后的逻辑查询计划
+                实际执行计划
+                String explaination = tableEnv.explain(resultTable);
+                System.out.println(explaination)
+            
+            流处理和关系代数的区别
+                【】  关系代数（表）/sql 流处理
+                处理的数据对象  字段元祖的有界集合  字段元祖的无限序列
+                查询query 对数据的访问  可以访问到完整的数据输入    无法访问所有数据，必须持续等待流式输入
+                查询终止条件    生成固定大小的结果集后终止  永不停止，根据持续收到的数据不断更新查询结果
+            
+            动态表（Dynamic Tables）
+                动态表是Flink 对流数据的TableAPI 和SQL 支持的核心概念
+                与表示批处理数据的静态表不同，动态表是随时间变化
+            
+            持续查询（Continuous Query）
+                动态表可以像静态的批处理表一样进行查询，查询一个动态表会产生持续查询（ContinuousQuery）
+                连续查询永远不会终止，并会生成另一个动态表
+                查询会不断更新其动态结果表，以反应其动态输入表上的更改
+            
+            动态表和持续查询
+            stream -> DynamicTable -》 conntinousQuery -> DynamicTable -> StreamExectuionEnvirome
+            流式表查询的处理过程
+                流被转换为动态表
+                动态表计算连续查询，生成新的动态表
+                生成的动态表被转换回流
+            
+            将流转换成动态表
+                为了处理带有关系查询的流， 必须先将其转换为表
+                从概念上讲，流的每个数据记录，都被解释为对结果表的插入（insert）修改操作
+
+            持续查询
+                持续查询会在动态表上做计算处理，并作为结果生成新的动态表
+            
+            将动态表转换成 DataStream
+                与常规的数据库表一样，动态表可以通过插入（Insert），更新（Update）和删除（Delete）更改，进行持续的修改
+                将动态表转换为流或将其写入外部系统时，需要对这些更改进行编码
+
+            仅追加（Append-only）流
+                仅通过插入（insert） 更改来修改的动态表，可以直接转换为仅追加流
+            
+            撤回（Retract）流
+                撤回流式包含两类消息的流：添加（Add）消息和撤回（Retract）消息
+            
+            Upsert（更新插入流）
+                Upsert流也包含两种类型的消息：Upsert消息和删除（Delete）消息
+            
+            时间特性（Time Attributes）
+                基于时间的操作（比如Table API 和SQL 中窗口操作）， 需要定义相关的时间语义和时间数据来源信息
+                Table 可以提供一个逻辑上的时间字段，用于在表处理程序中，指定时间和访问相应的时间戳
+                时间属性，可以是每个表schema的一部分。一旦定义了时间属性，它就可以作为一个字段的引用，并且可以在基于时间的操作中使用
+                时间属性的行为类似于常规时间戳，可以访问，并且进行计算
+            
+            定义处理时间（Processing Time）
+                处理时间语义下，允许表处理程序根据及其的本地时间生成结果。它是时间的最简单概念。它既不需要提取时间戳，也不需要生成watermark
+                由 DataStream 转换成表时指定
+                在定义Schema 期间，可以使用.proctime，指定字段名定义处理时间字段
+                在这个proctime属性只能通过附加逻辑字段，来扩展无力schema。因此，只能在schema定义的末尾定义它
+                Table sensorTable = tableEnv.fromDataStream(dataStream,"id,name,tim.proctime");
+                DDL 方式 pt AS proctime
+            
+            定义事件时间（Event Time）
+                事件时间语义，允许表处理程序根据每个记录中包含的时间生成结果。这样即使在有乱序事件或者延迟事件时，也可以获得正确的结果
+                为了处理无序事件，并区分流中的准时和推迟事件；Flink需要从事件数据中，提取时间戳，并用来推进事件时间的进展
+                定义事件时间，同样有三种方法
+                    由DataStream转换成表时间指定 rt.rowtime
+                    定义TableSchema时指定 .rowtime(new Rowtime().timestampsFromField("").watermarksPeriodicBounded)
+                    在创建表的DDL中定义 rt as TO_TIEMESTAMP(FROM_UNIXTIME(ts)) watermark for rt as rt - interval '1' seconed
+            
+            窗口
+                时间语义，要配合窗口操作才能发挥作用
+                在 Table API 和 SQL 中，主要有两种窗口
+                group windows（分组窗口）
+                    根据时间或行技术间隔，将行聚合到有限的组（group）中，并对每个组的数据执行一次聚合函数
+                Over windows
+                    针对每个输入行，计算相邻范围内的聚合
+                
+            Group Windows
+                Group Windows 是使用windows（w.GroupWindows）子句定义的，并且必须由as子句指定一个别名。
+                为了按窗口对标进行分组，窗口的别名必须在group by 子句中，像常规的分组字段一样引用
+                Table table = input.windows([w: groupWindows] as "w")
+                    .gouprBy("w, a")
+                    .select("a, b.sum");
+                Table API 提供了一组具有特定语义的预定义window类，这些类会被转换为底层DataStream 活DataSet的窗口操作
+            
+            滚动窗口 （Tumbling windows）
+                滚动窗口要用Tumble类来定义
+                    //Tumbling Event-time window
+                    .windows(Tumble.over("10.minutes").on("rowtime").as("w"))
+                    // Tumbling processing-time window
+                    .windows(Tumble.over("10.minutes").on("proctime").as("w"))   
+                    // Tumbling Row-count window                 
+                    .windows(Tumble.over("10.rows").on("rowtime").as("w"))   
+
+            滑动窗口 
+                // sliding event-time window
+                .windows(Slide.over("10.minutes").every("5.minutes").on("rowtime").as("w"))
+                // slding processing -time window
+                .windows(Slide.over("10.minutes").every("5.minutes").on("proctime").as("w"))
+                // sliding row-count windows
+                .windows(Slide.over("10.rows").every("5.minutes").on("rowtime").as("w"))
+            
+            会话窗口(Session windows)
+                会话窗口要用 session 类来定义
+
+                //session event-time window
+                .windows(Session.withGap("10.minutes").on("rowtime").as("w"))
+                //session processing-time window
+                .windows(Session.withGap("10.minutes").on("proctime").as("w"))
+
+            SQL 红的 Group Windows
+                Group Windows 定义在 SQL 查询的Group by 子句中
+                TUMBLE(time_attr, interval)
+                定义一个滚动窗口，第一个参数是时间字段，第二个参数是窗口长度
+                HOP(time_attr, interval, interval)
+                定义一个滑动窗口，第一个参数是时间字段，第二个参数是窗口滑动步长，第三个是窗口长度
+                SESSION(time_attr, interval)
+                定义一个会话窗口， 第一个参数是时间字段，第二个参数是窗口间隔
+            
+            Over Windows
+                Over window聚合是标准SQL中已有的（over 子句）， 可以在查询的 select 子句中定义
+                over window 聚合，会针对每个输入行，计算相邻行范围内的聚合
+                over winodows 使用 window(w。overwindows) 子句定义，并在select()方法中通过别名来引用
+                    Table table = input
+                        .window([w:OverWindow] as "w")
+                        .select("a,b.sum over w, c.min over w");
+                Table API 提供了 Over 类， 来配置Over 窗口的属性
+            
+            无界 Over Windows
+                可以在时间时间或处理时间，以及指定为时间间隔或行计数范围内，定义Over windows
+                无界的over windows 是使用常量指定的
+                .windows(Over.partitionBy("a).orderBy("rowtime").parecding(UNBOUNDED_RAMGE).as("w"))
+                .windows(Over.partitionBy("a).orderBy("proctime").parecding(UNBOUNDED_RAMGE).as("w"))
+                .windows(Over.partitionBy("a).orderBy("rowtime").parecding(UNBOUNDED_ROW).as("w"))
+                .windows(Over.partitionBy("a).orderBy("proctime").parecding(UNBOUNDED_ROW).as("w"))
+
+            有界 Over Windows
+                有界的 over window 是用间隔的大小指定的
+                .window(Over.partitionBy("a").orderBy("rowtime").preceding("1.minutes").as("w"))
+                .window(Over.partitionBy("a").orderBy("proctime").preceding("1.minutes").as("w"))
+                .window(Over.partitionBy("a").orderBy("rowtime").preceding("10.rows").as("w"))
+                .window(Over.partitionBy("a").orderBy("proctime").preceding("10.rows").as("w"))
+
+            SQL 中的 Over Windows
+                用Over 做窗口聚合时，所有聚合必须在同意窗口上定义，也就是说必须是相同的分区，排序和范围
+                目前仅支持在当前行范围之前的窗口
+                ORDER BY 必须在单一的时间属性上指定
+                    SELECT COUNT(amount) OVER(
+                        PARTITION BY user
+                        OREDER BY proctime 
+                        ROWS BETWEN 2 PRECEDING AND CURRENT ROW
+                    ) FROM orders
+            
+            函数
+                Flink Table API 和 SQL 为用户提供了一组用于数据转换内置函数
+                SQL 支持的很多函数， Table API 和SQL都已经做了实现
+                比较函数 
+                    sql
+                        =
+                        >
+                    Table API
+                        ===
+                        >
+                逻辑函数
+                    SQL
+                        boolean1 or boolean2
+                        boolean is false
+                        not boolean
+                    Table API
+                        boolean1 || boolean2
+                        boolean.isFalse
+                        !boolean
+                算数函数
+                    SQL
+                        num1 + num2
+                        POWER(numeric1,numeric2)
+        
+                    TableAPI
+                        num1 + num2
+                        numeric1.power(numeric2)
+
+            用户自定义函数 （UDF）
+                用户定义函数（User - defined Functions, UDF）是一个重要特性，他们显著扩展了查询的表达能力
+                在大多数情况下，用户定义的函数必须先注册，然后才能在查询中使用
+                函数通过调用 registerFunction（） 方法在TableEnvironment中注册，当用户定义的函数被注册时，它被插入到TableEnvironment的函数目录中，这样TableAPI活SQL解析器就可以识别并正确地使用
+
+                标量函数（Scalar Functions）
+                    用户定义的标量函数，可以将0,1活多个标量值，映射到新的标量值
+                    为了定义标量函数，必须在org.apache.flink.table.functions中扩展积累Scalar Function，并实现（一个或多个）求职（eval）方法
+                    标量函数的行为由求职方法决定，求职方法必须公开声明命名为eval
+                        HashCode hashCode = new HashCode()
+                        //环境注册 UDF
+                        tableEnv.registerFunction("hashCode", hashCode);
+                    -----
+                        public static class HashCode extends ScalarFunction{
+                            public int eval(String id){
+                                return id.hashCode();
+                            }
+                        }    
+
+            
+
+
+
+
+            
+
+
+
+
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
