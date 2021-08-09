@@ -810,14 +810,65 @@ Flink 运行架构
                         HashCode hashCode = new HashCode()
                         //环境注册 UDF
                         tableEnv.registerFunction("hashCode", hashCode);
+                        table.select(id,age,hashCode(id))
                     -----
                         public static class HashCode extends ScalarFunction{
                             public int eval(String id){
                                 return id.hashCode();
                             }
-                        }    
+                        }
+                表函数（Table Function）
+                    用户定义的表函数，也可以将0，1或多个标量值作为参数，与标量函数不同的是它可以返回任意数量的行作为输出，而不是单个值
+                    为了定义一个表函数，必须扩展org.apache.flink.table.functions中的基类TableFunction并实现（一个或多个）求值方法
+                    表函数的行为由其求职方法决定，求职方法必须是public的，并且命名为eval
+                        public static class Split extends TableFunction<Tuple2<String,Integer>>{
+                            private String separator ;
+                            public Split(String separator) {
+                                this.separator = separator;
+                            }
+                            public void eval(String str){
+                                for (String s : str.split(separator)) {
+                                    collect(new Tuple2<String, Integer>(s, s.length()));
+                                }
+                            }
+                        }
+                        ----------
+                        tableEnv.registerFunction("split","split")
+                        table.joinLateral(split(id) as (word, length))
+                        .select(id,word,length);
+                        -----------
+                        sql("select id, word, length from user , lateral table(split(id)) as splitid(word, length)")
 
-            
+                聚合函数 （Aggregate Functions）
+                    用户自定义 聚合函数 可以把一个表中的数据，聚合成一个标量值
+                    用户定义的聚合函数，是通过继承AggregateFunctions 抽象类实现的
+                        public static class AvgTmp extends AggregateFunction<Double, Tuple2<Double,Integer>>{
+                            @Override
+                            public Double getValue(Tuple2<Double, Integer> accmulates) {
+                                return accmulates.f0 / accmulates.f1;
+                            }
+
+                            @Override
+                            public Tuple2<Double, Integer> createAccumulator() {
+                                return new Tuple2<Double, Integer>(0.0, 0);
+                            }
+
+                            public void accumulate(Tuple2<Double, Integer> accmulates, Double temp ){
+                                accmulates.f0 += temp;
+                                accmulates.f1 += 1;
+                            }
+                        }
+                        ------------
+                        table.
+                            groupBy(id)
+                            .aggregate("avgTemp(temp) as avgTemp")
+                            .select(id, avgTemp)
+                        sql("select id, avgTemp(temp) from user group by id")
+                        toRetrackTable
+
+                表聚合函数
+                    用户定义的表聚合函数，可以把一个表中的数据，聚合为具有多行和多列的结果表
+                    用户定义表聚合函数，是通过继承TableAggreFunction()抽象类来实现的
 
 
 
