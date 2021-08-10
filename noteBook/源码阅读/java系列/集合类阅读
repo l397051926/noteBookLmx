@@ -1,0 +1,42 @@
+集合类源码阅读 顶级接口是 Iterable (迭代器)
+    Iterable 携带泛型T
+        成员变量 本身 Iterator
+        default forEach()
+   Collection 集合的父类下面的包含子类为
+          Set
+          List
+           Map
+          SortedSet
+          SortedMap
+          HashSet
+          TreeSet
+          ArrayList
+          LinkedList
+          Vector
+          Collections
+          Arrays
+          AbstractCollection
+        包含方法
+            大小： size()
+            非空校验： isEmpty()
+            包含: boolean contains(Object o)
+    List 继承 Collection
+    java本身的实现有三个
+        ArrayList
+        Arrays
+        LinkedList
+        Stack
+        Vector
+    ArrayList 的实现：
+        RandomAccess 快速访问接口，标志这个集合是可以用快速访问的，也就是for 会高于 迭代器 iterators
+        Cloneable 可以复制 表示这个类
+        transient 表示这个字段不需要序列化
+        模式容量 10
+        提供了多个构造方法， 一个是提供初始容量，如果为0则给空的数组，如果大于零，则创建固定大小的数组
+        无惨构造方法， 会默认给一个空的数组，
+        传入集合的构造方法 判断进入集合是否为0 - 0 则给空集合，否则 size给默认集合数，然后判断类型是否相同，不同转换为相同类型数组，里面类型都是Object
+        trimToSize 修改空容量
+        modCount 扩容次数
+        grow（）扩容方法
+        最大容量为 Integer 最大值 -8 ，如果超过了就抛出 OutOfMemoryError
+
