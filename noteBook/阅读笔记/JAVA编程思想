@@ -409,7 +409,87 @@
     10.13 总结
 
 第十一章 持有对象
+    如果一个程序只包含固定数量的且其生命期都是已知的对象，那么这是一个非常简单的程序
+    利用java的容器来持有对象，这一章主要讲java常见的容器内容
+    11.1 泛型和类型安全的容器
+        @SuppressWaringings 不受检查的异常
+        ArrayList 默认存的对象是Object 如果不指定泛型，那么在get的时候 就会发送ClassCaseEExcetpion 类型转换的异常
+        所以在使用容器时最好指定他存储的容器类型
+    11.2 基本概念
+        java的容器类库拥有两个不同的概念
+        1. Collection 保存一组元素序列 list是 顺序保存元素 set 是不能有重复元素 queue 排队规则确定对象顺序
+        2. Map 保存 key-vale 键值对的数据 也被称为字典 可以使用键来查找数据
+    11.3 添加一组元素
+        常用的工具方法 Arrays Collections
+        使用 Collections.addAll()  Arrays.asList()
+    11.4 容器的打印
+        常见容器
+        ArrayList ,LinkedList, HashSet, TreeSet, LinkedHashSet, HashMap, TreeMap, LinkedHashMap
+        ArrayList,LinkedList 都是按照插入顺序保存元素，区别只是他们操作类型的性能上的区别
+        HashSet LinkedHashSet TreeSet 都是保存一份数据，HaseSet 插入和提取都很快， LinkedHashSet 是保证插入顺序 TreeSet 则是比较 值 来排序保存数据默认升序
+        HashMap 提供了快速查找数据 ，TreemAP 则保证类排序顺序 linkedHashMap 则按照插入顺序保存 同时保留了HashMap的查询速度
+    11.5 List
+        ArrayList 善于随机访问元素，但是中间插入和移除元素会很慢
+        LinkedList 上虞插入和删除操作，提供了优化的顺序访问，随机访问则相对比较慢
+        subList 截取中间的一部分 retainAll 交集操作， removenAll 移除部分元素 通过equals 判定， addAll 则是添加元素 可以是中间也可以是尾部
+        isEmpty 是否为空 clear 清空容器 toArray 则是转换成数组
+    11.6 迭代器
+        迭代器是一种设计模式，它的工作是遍历并选择序列中的对象，而客户端不必知道或关系该序列的底层结构
+        此外迭代器通常被称为轻量级对象， 创建它代价小
+        比如java 的 Iterator 只能单向移动，
+        1. 使用方法iterator()要求容器返回一个Iterator，Iterator将准备好返回序列第一个元素
+        2. 使用next()获得序列中的下一个元素
+        3. 使用hasNext() 检查序列中是否还有元素
+        4. 使用remove()将迭代器新进返回的元素删除
 
+        11.6.1 ListIterator
+            是一个更加强大的Iterator的子类型，支持双向移动，可以使用set()方法替换它访问过的最后一个元素
+            可以使用 ListIterator() 产生一个指向List开始处的ListIterator，也可以使用ListIterator方法创建一个指向列表索引为n的元素
+    11.7 LinkedList
+        执行在List中间插入和移除 要比ArrayList更高效，但是在随机访问上却要逊色一些
+        LinkeList 还添加了可以使其用作 栈，队列 ，双端队列的方法
+        getFirst() element() 如果List为空 则抛出异常NoSuchElementException peek 则会返回null
+        removeFirst() remove() 同样数据为空 跑异常 而 poll() 则返回null
+        addFirst add() addLast() 相同
+        removeLast() 移除并返回列表的最后一个元素
+
+    11.8 Stack
+        栈 后进先出(LIFO) 容器，也被称为叠加栈， 最后一个压入的数据会第一个弹出，LinkList满足栈的特性，所以可以当做栈使用
+        push 压栈 peek 战顶数据 pop 出站 isEmpty 是否为空
+        可以使用 net.mindivew.util.Stack
+
+    11.9 Set
+        不保存重复的元素，通过一定的判定条件，为了看set 里面是否重复，set拥有 hashset 快速查找元素的功能
+        HashSet使用了三列，TrreeSet存储使用了红-黑树，保证了值的排序， LinkeHashList，使用了链表维护了元素的插入顺序
+    11.10 Map
+        根据 key-value 来存储的数据 每个key 不可以相同
+        keySet() 可以获取所有的key 的set 集合
+
+    11.11 Queue
+        队列 先进先出 （FIFO） LinkList 天然支持 队列功能
+        offer() 方法将一个元素插入对尾
+        peek() element() 都是不移除队首元素 展示对首数据 一个抛异常 一个返回null
+        poll() remove() 都是移除并且展示队首数据 一个抛异常 一个返回 null
+
+        11.11.1 PriorityQueue
+            优先级队列，声明下一个弹出的元素是最优先级的数据
+            offer() 插入数据会进行排序
+
+    11.12 Collection 和 Iterator
+        Collection 是所有序列容器的共性跟接口
+        Iterator 是Collection 的父接口 用于迭代器的使用
+
+    11.13 Foreach与迭代器
+        foreach语法主要用于数组
+        iterator() 返回了Iterator<String> 的实例，可以使用 foreach语句中
+        大部分类都是Iterable类型
+        而数组不可以当成Iterable参数传递
+
+        11.13.1 适配器方法惯用法
+
+    11.14 总结
+
+第十二章 通过异常处理错误
 
 
 
