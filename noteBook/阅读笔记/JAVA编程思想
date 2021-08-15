@@ -568,6 +568,87 @@
         9. 让类库和程序更安全（这既是在为调试做短期投资，也是在为程序的健壮性做长期投资）
     12.14 总结
 
+第十三章 字符串
+    可以证明， 字符串操作是计算机程序设计中最常见的行为。
+    13.1 不可变String
+        final 修饰，每次获取的都是新的String
+    13.2 重载 + 与StringBuilder
+        String 对象是不可变的，你可以给一个String 对象加任意多的别名。因为String对象具有只读特性，所以他的任何引用都不可能改变他的值
+        编译器会帮你优化一部分 String 的拼接性能
+    13.3 无意识的递归
+        toString() 方法，会打印出对象的信息，如果想打印地址，可以使用this 这个方式
+    13.4 String上的操作
+        方法      参数，重载版本     应用
+        构造器     重载笨笨，默认版本   创建String对象
+        length()                    String中字符的个数
+        charAt()    Int索引          取得String中该索引位置上的char
+        getChars(),getBytes 要复制部分的起点和重点的索引，复制的目标数组，目标数组的起始索引    复制char或byte到一个目标数组中
+        toCharArray()                   生成一个char[],包含String的所有字符
+        equals(),equalsIgnoreCase() 与之进行比较的String   比较两个String的内容是否相同
+        compareTo() 与之进行比较的String   按词典顺序比较String的内容，比较结果为负数，零或正数。注意，大小写并不等价
+        contains()  要搜索的CharSequence    如果该String对象包含参数的内容，则返回true
+        contentEquals() 与之进行比较的CharSequence或StringBuffer    如果该String与参数的内容完全一致，则返回true
+        equalsIgnoreCase()  与之进行比较的String   忽略大小写，如果两个String的内容相同，则返回true
+        reglonMatcher()     该String的索引偏移量，另一个String及其索引偏移量，要比较的长度。重载版本增加了忽略大小写功能    返回boolean结果，以表名所比较区域是否相等
+        startsWith()        可能的起始String。重载版本在参数中增加了偏移量      返回boolean结果，以表名改String是否以参数起始
+        endsWith()          该String可能的后缀String      返回boolean，以表名此参数是否该字符串的后缀
+        indexOf(),lastIndexOf()     重载版本包括：char，char与起始索引，String，String与起始索引        如果该String并不包含此参数，就返回-1，否则返回此参数在String中的起始索引，lastIndexOf（）是从后向前搜索
+        substring()(subSequence())  重载版本，起始索引，起始索引+重点坐标     返回一个新的string，以包含参数指定的子字符串
+        concat()        要链接的String      返回一个新的String对象，内容为原始String链接上参数String
+        replace()       要替换掉的字符串，用来进行替换的新字符     返回替换字符后的新String对象，如果没有替换发生，则返回原始的String对象
+        toLowerCase() toUpperCase()                 将字符的大小写改变后，返回一个新String对象。如果没有改变发生，则返回原始的String对象
+        trim()                                      将String连贯的空白字符删除后，返回一个新的String对象。如果没有改变发生，则返回原始的String对象
+        valueOf()       从在版本        返回一个表示参数内容的String
+        intern()                        为每个唯一的字符序列生成一个且仅生成一个String引用
+    13.5 格式化输出
+        13.5.1 printf()
+            printf("Row 1: [%d %f]", x, y)
+        13.5.2 System.out.format()
+        13.5.3 Formatter类
+        13.5.4 格式化说明符
+        13.5.5 Formatter转换
+            d 整数（十进制）
+            c Unicode字符
+            b boolea值
+            s String
+            f 浮点数（十进制）
+            e 浮点数（科学技术）
+            x 整数（十六进制）
+            h 散列码（十六进制）
+            % 字符"%"
+        13.5.6 String.format()
+    13.6 正则表达式
+        13.6.1 基础
+        13.6.2 创建正则表达式
+            Pattern 正则表达式类
+            . 任意字符 [abc] 包含abc任意字符 [^abc]除了abc之前的任意字符 [a-zA-Z]范围从a到z或者从A到Z
+            [abc[hij]] 任意a b c hi j 字符
+            [a-z&&[h(j)]] 任意h i 或 j   \s 空白符  \S 非空白符 \d 数字 \D 非数字 \w词字符 \W 非词字符
+            ^ 一行开的起始    $ 一行的结束  \b 词的边界  \B非词的边界  \G前一个匹配的结束
+        13.6.3 量词
+            贪婪型： 量词总是贪婪的，除非有其他的选项被设置。贪婪表达式会为所有可能的模式发现尽可能多的匹配。
+            勉强性： 用问号来指定，这个量词匹配满足模式所需的最少字符数，因此也称作懒惰的，最少匹配的
+            占有行： 目前，这种类型的量词只有java语言中才可用
+        13.6.4 Pattern和Matcher
+            用 static Pattern.comlile()方法边界表达式
+            用 matcher()方法 返回Matcher对象
+            macthcer 拥有 group的概念
+            Pattern 标记
+        13.6.5 split()
+        13.6.6 替换操作
+        13.6.7 reset
+            通过reset()方法，可以将现有的Matcher对象应用于一个新的字符序列
+        13.6.8 正则表达式与Java I/O
+    13.7 扫描输入
+        Scanner的构造器接受任何类型的输入对象
+        13.7.1 Scanner定界符
+            默认是用空白字符对输入进行分词，可以使用正则表达式来分词
+        13.7.2 用正则表达式扫描
+    13.8 string Tokenizer
+    13.9 总结
+
+
+
 
 
 
