@@ -7,6 +7,7 @@
     vue 卸载命令： npm uninstall vue-cli
     重新安装最新版本命令 3.0以上一定会有 @ 这个符号，没有就会升级2.0版本
         npm install -g @vue/cli
+        npm install -g @vue/cli@3.11.0
 
 2. 删除失败，因为 npm 版本太旧的原因 升级npm
     npm install -g npm  也可以指定版本 npm -g install npm@6.8.0
