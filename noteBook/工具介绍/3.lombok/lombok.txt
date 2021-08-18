@@ -1,0 +1,8 @@
+1. lombok 是什么？
+    是一个简化开发的工具，可以减少一些 重复的代码 可以使用注解直接使用，真香
+2. lombok常用注解
+    Getter  对实体类填充 get() 方法
+    Setter  对实体类填充 set() 方法
+    Date    对实体类填充  get() + set() 方法
+    @SneakyThrows  自动补充 try catch方法
+    RequiredArgsConstructor   使用final 修饰 自动补充 @AutoWide 方法
