@@ -843,10 +843,91 @@
 
 第十七章 容器深入研究
     17.1 完整的容器分类法
+        看图 <JAVA编程思想_容器高级分类>
         java se5 增加了
         Queue 接口 以及实现PriorityQueue和各种风格的Blockingueue
         ConcurrentMap 实现了ConcurrentHashMap，他们也是用于多线程机制
-
+        CopyOnWriteArrayList和CopyOnWriteArraySet，他们也是用于多线程机制的
+        EnumSet和EnumMap，为使enum而设计的Set和Map的特殊实现，
+        在Collections类中的多个便利方法
+    17.2 填充容器
+        可以使用Collections fill() 方法
+        17.2.1 一种Generator解决方案
+            LinkedHashSet 维护了插入顺序的链接列表
+        17.2.2 Map生成器
+        17.2.3 使用Abstract类
+            享元模式，使得对象的一部分可以被具体化
+    17.3 Collection的功能方法
+        boolean add(T)
+        确保容器持有具有泛型类型T的参数，如果没有将此参数添加进容器，则返回false
+        boolean addAll(Collection<? extends T>)
+        添加参数中的所有元素。只添加了任意元素就返回true
+        vold clear()
+        移除容器中所有元素
+        boolean contains(T)
+        如果容器已经持有具有泛型类型T此参数，则返回true
+        boolean containsAll(Collection<?>)
+        如果容器持有此参数中的所有元素，则返回true
+        boolean isEmpty()
+        容器中没有元素时返回true
+        Iterator<T> iterator()
+        返回一个Iterator<T>, 可以用来便利容器中的元素
+        Boolean remove<Object>
+        如果参数在容器中，则移除此元素的一个实例，如果做了移除动作，则返回true
+        boolean removeAll(Collection<?>)
+        移除参数中的所有元素。只有移除动作发生就返回true(可选的)
+        Boolean retainAll(Collection<?>)
+        只保存参数中的元素（交集的概念），只要Collection发生了改变就返回true
+        int size()
+        返回容器中元素的数目
+        Object[] toArray()
+        返回一个数组，该数组包含容器中的所有元素
+        <T> T[] toArray(T[] a)
+        返回一个数组，该数组包含容器中的所有元素。返回结果的运行时类型与参数数组a的类型相同，而不是单纯的Object
+    17.4 可选操作
+       17.4.1 未获支持的操作 UnsupportedOperationException
+            Arrays.asList() 出来的list 就无法在添加元素了
+    17.5 List的功能方法
+        add, addAll,contains,containsAll,get,indexOf,isEmpty,iterator,listIterator,lastIndexOf,retainAll,removeAll
+        set,
+        ArrayList, LinkedList
+    17.6 Set存储顺序
+        Set
+        存入Set的每个元素都必须是唯一的，因为Set不保存重复元素，加入Set的元素必须定义equals()方法以确保对象的唯一性。Set与Collection有安全一样的接口。
+        Set接口不保证维护元素的次序
+        HashSet
+            为快速查找而设计的Set。存入HashSet的元素必须定义HashCode()
+        TreeSet
+            保持次序的Set，底层为树结构。使用它可以从Set中提取有序的序列。元素必须实现Comparable接口
+            TreeSet<Integer> treeSet = new TreeSet<>((o1, o2) -> o1 - o2);
+        LinkedHashSet
+            具有HashSet的查询速度，且内部使用链表维护元素的顺序（插入的次序）。于是在使用迭代器便利Set时，结果会按照元素插入的次序现实，元素也必须定义HashCode方法
+        17.6.1 SortedSet
+            first，last, subSet(fromElement,ToElement), headSet(toElement),tailSet(fromElement)
+    17.7 队列
+        LinkedList,PriorityQueue
+        17.7.1 优先级队列
+            需要实现Comparable来进行控制
+        17.7.2 双向队列
+            LinkedList 实现了双向队列的功能
+            addFirst addLast,getFirst,getLast,removeFirst,removeLast,size,toString
+    17.8 理解Map
+        HashMap, TreeMap, LinkedHashMap, WeekHashMap, ConcurrentHashMap, IdentityHashMap
+        17.8.1 性能
+            性能是映射表中的一个重要问题，get()线性搜索时，执行速度会相当地慢，而正式HashMapt提高速度的地方，使用了特殊的值，散列码，来取代对键的缓慢搜索
+            HashMap 是是使用了对象的hashCode() 进行快速查询，显著提高了性能
+            HashMap
+            Map基于散列表实现，插入和查询“键值对”的开销是固定的，可以通过构造器设置容量和负载因子，以调整容器的性能
+            LinkedHashMap
+            类似于HashMap，但是迭代遍历时，取得 键值对 的顺序是插入的次序，或者是最近最少使用LRU的次序，只比HashMap慢一点，而在迭代访问时，方为更快，因为它使用链表维护内部次序
+            TreeMap
+            基于红黑树实现。查看键 或键值对时，它们会被排序，TreeMap的忒点在于，所得到的的结果是警告排序的。TreeMap是唯一带有subMap方法的map，它可以返回一个子树
+            WeekHashMap
+            弱键 映射，允许释放映射所指向的对象；这是为解决某类特殊问题而设计的。如果映射之外没有引用指向某个键，则此键可以被垃圾收集器回收
+            ConcurrentHashMap
+            一种线程安全的Map，它不涉及同步加锁
+            IdentityHashMap
+            使用 == 代替equals()对 键进行比较的三列映射。专为解决特殊问题而设计的
 
 
 

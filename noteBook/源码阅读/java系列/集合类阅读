@@ -40,3 +40,17 @@
         grow（）扩容方法
         最大容量为 Integer 最大值 -8 ，如果超过了就抛出 OutOfMemoryError
 
+HashMap 源码阅读
+    首先HashMap 初始 默认容量是16 加载因子是0.75
+    HashMap 里面有多种node，第一种node是 普通的node，是链表数据类型
+    第二种为 TreeNode 是红黑树构造
+    HashMap 的Hash 计算方式为 (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16); 也就是 key的hash 异或 key的hash >>>16 防止hash碰撞
+    首先 HashMap中保存了一个 数组，数组里存的就是Node 也就是 里面保存了一个链表
+    首先看一下 get(key)方法 他调用了 getNode（int hash, Object key）这个方法也就是将 key进行了hash
+        里面获取Object 是先查对应数组 也就是 & 当前数组长度 找到具体位置 ，看是否有Node，如果有 看第一个Node是不是对应数据 用 == 和 equals判定
+        如果不是 则看这个Node 是不是 TreeNode， 如果是TreeNode， 则使用红黑树的查找元素方式，如果不是 则用链表的查找方式
+    接下来看一下 put（key） 调用了 put putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict)
+        首先看 数组是否需要初始化 如果初始化 使用 resize() 方法
+        其次看对应的节点是否为kong 如果为空直接赋值给node
+        如果上面已经有node了，则看他是否是 Treenode 类型 如果是TreeNode类型，则使用TreeNode类型进行添加
+        如果不是TreeNode类型 寻找 Node的next是否为空 如果为空 则给对应node值，然后判定一下长度是否超过8个 如果超过则转换成TreeNode
