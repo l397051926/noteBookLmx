@@ -841,7 +841,11 @@
         16.7.5 在已排序的数组中查找 Arrays.binarySearch()
     16.8 总结
 
-
+第十七章 容器深入研究
+    17.1 完整的容器分类法
+        java se5 增加了
+        Queue 接口 以及实现PriorityQueue和各种风格的Blockingueue
+        ConcurrentMap 实现了ConcurrentHashMap，他们也是用于多线程机制
 
 
 

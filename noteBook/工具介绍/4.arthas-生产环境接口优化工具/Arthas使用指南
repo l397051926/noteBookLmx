@@ -1,0 +1,106 @@
+Arthas使用指南
+    Arthas 是基于 Greys 进行二次开发的全新在线诊断工具，利用Java6的Instrumentation特性，动态增强你所指定的类，
+    获取你想要到的信息, 采用命令行交互模式，同时提供丰富的 Tab 自动补全功能，让你在定位、分析诊断问题时看每一个操作都看起来是那么的 666
+    官网 http://arthas.gitee.io/
+Arthas 能为你做什么？
+    这个类从哪个 jar 包加载的？为什么会报各种类相关的 Exception？
+    我改的代码为什么没有执行到？难道是我没 commit？分支搞错了？
+    遇到问题无法在预发 debug 一下，难道只能通过加日志再重新预发布吗？
+    线上遇到某个用户的数据处理有问题，但线上同样无法 debug，线下无法重现,怎么办?
+    是否有一个全局视角来查看系统的运行状况？
+    有什么办法可以监控到容器和中间件的实时运行状态？
+
+Arthas安装及使用
+    https://github.com/alibaba/arthas/releases/download/arthas-all-3.5.3/arthas-bin.zip
+    下载压缩包,上传到需要被诊断的机器， 解压缩
+    安装: 执行 ./install.sh
+    启动: 执行 ./as.sh pid
+    使用: java -jar arthas-boot.jar
+    注：通过上面也分析到，我们启动arthas之前，必须要先启动我们的目标进程，否则arthas可能无法启动。
+
+常用命令
+    dashboard : 类图向界面，用于观察每个线程及所占的CPU。
+    thread : 查看那些进程占用CPU。
+        thread -i 5000
+        thread -i 5000 -n 3
+    jmap -histo 进程号：查看那些进程占内存。
+    jmap -histo 进程号 | head -20 ：查看那些进程占内存,获取前20行。
+
+GC相关
+    jps :查看运行进程及进程号。
+    jinfo 进程号 ：查看进程详情。
+    java -Xms200M -Xmx200M -XX:+UseParallelGC -XX:+PrintGC -XX:+HeapDumpOnOutOfMemoryError com.mashibing.jvm.gc.T15_FullGC_Problem01 。
+    jstat -gc 进程号 ： 查看GC 信息。
+
+sc 和 sm
+    通过sc可以查看已加载类的相关信息，比如该类是从哪个jar包加载的，被哪个类加载器加载的，以及是否是接口等等。
+    sm查看已加载类的方法详情。
+
+sysprop和sysenv
+    通过sysprop可以查看所有的系统变量，也可以设置某个系统变量。
+    同理，通过sysenv可以查看所有的操作系统环境变量，也可以查看设置某个环境变量。
+
+dump
+    将已加载类的字节码dump到本地磁盘上。
+
+jad
+    有时我们经常会不确定线上或者测试环境的包是否是我们修改过的，这时候就可以通过jad反编译来看下。
+    反编译指定已加载类的源码，jad demo.MathGame
+
+watch
+    让你能方便的观察到指定方法的调用情况。能观察到的范围为：返回值、抛出异常、入参，通过编写 OGNL 表达式进行对应变量的查看。
+    watch的使用姿势比较丰富，可以在四个不同的场景观察方法的执行。比如方法调用之前、方法调用之后、方法异常之后、方法结束之后。默认观察的是方法结束之后。
+    如果观察的是方法结束之后的场景，由于入参可能在执行方法时被改变，所以此时输出的可能不是真正的入参。因此，要看真正的入参，要看方法调用之前的，也就是加上-b的参数。
+    另外，使用-b参数观察的话，则观察不到方法返回的结果以及抛出的异常了。
+    # 观察CommonTest的test方法
+    # 输出 入参、返回结果、抛出的异常 —— 输出的内容可以动态调整
+    # 后面跟着的是 条件表达式，表示耗时超过10ms才输出
+    # -n 表示只执行一次，-x表示 入参和返回结果的展开层次为5层
+    watch *.CommonTest test "{params,returnObj,throwExp}" '#cost>10' -x 5 -n 1
+
+    # 耗时大于10ms并且第一个参数等于1才输出
+    watch *.CommonTest test "{params,returnObj,throwExp}" '#cost>10 && params[0]==1' -x 5 -n 1
+    # 第一个参数大于1 并且第二个参数等于hello才输出
+    watch *.CommonTest test "{params,returnObj,throwExp}" 'params[0]>1 && params[1]=="hello"' -x 5 -n 1
+    # 第一个参数小于5或者第二个参数等于"world"就输出
+    watch *.CommonTest test "{params,returnObj,throwExp}" 'params[0]<5 || params[1]=="wolrd"' -x 5 -n 1
+    # 第一个参数的name字段等于world时才输出。
+    # 由于在方法执行过程中参数的name属性可能发生改变，因此加上-b才能观察到真正的入参
+    watch -b *.CommonTest test "{params,returnObj,throwExp}" 'params[0].name=="wolrd"' -x 5 -n 1
+
+    # 由于同时指定了-s和-b，所以方法被调用一次，就会输出2次结果(两个场景分开输出)，分别是方法被调用前，和返回之后
+    # 注意，这里如果-n只设置成1，那么只会输出-b对应的输出,-s对应的输出由于没有次数了就无法输出了
+    watch *.CommonTest test '{params,returnObj,throwExp}' -x 5 -n 2 -s -b
+
+monitor
+    monitor命令可以监控方法的执行情况。比如调用成功次数，失败次数，失败率、平均执行时间等等。默认120秒输出一次，也就是说，当我们输入monitor命令之后，每120秒就会输出一次统计结果。
+
+    通过-c参数可以修改输出频率，支持通配符和正则表达式。
+    monitor -c 5 demo.MathGame primeFactors
+
+trace (! 重点使用)
+    方法内部调用路径，并输出方法路径上的每个节点上耗时，tt命令会记录每次方法调用的各种信息。它和watch有些相似但是它能记录下各个时间点的调用信息，之后随时查看，甚至replay这次调用。
+    trace demo.MathGame run
+
+tt
+    timetunnel,记录下指定方法每次调用的入参和返回信息，并能对这些不同的时间下调用进行观测,同时可回放该方法调用
+    tt -t demo.MathGame primeFactors
+    1.使用tt –t 类名次 方法名次
+    2.tt –play -i 1000
+
+Tprofiler
+    TProfiler是一个可以在生产环境长期使用的性能分析工具.它同时支持剖析和采样两种方式,记录方法执行的时间和次数,生成方法热点 对象创建热点 线程状态分析等数据,为查找系统性能瓶颈提供数据支持.
+    TProfiler在JVM启动时把时间采集程序注入到字节码中,整个过程无需修改应用源码.运行时会把数据写到日志文件,一般情况下每小时输出的日志小于50M.
+
+show-busy-java-threads
+    查找cpu性能消耗过程
+    top命令找出消耗CPU高的Java进程及其线程id：
+    开启线程显示模式（top -H，或是打开top后按H）
+    按CPU使用率排序（top缺省是按CPU使用降序，已经合要求；打开top后按P可以显式指定按CPU使用降序）
+    记下Java进程id及其CPU高的线程id
+    查看消耗CPU高的线程栈：
+    用进程id作为参数，jstack出有问题的Java进程
+    手动转换线程id成十六进制（可以用printf %x 1234）
+    在jstack输出中查找十六进制的线程id（可以用vim的查找功能/0x1234，或是grep 0x1234 -A 20）
+    查看对应的线程栈，分析问题
+    查问题时，会要多次上面的操作以分析确定问题，这个过程太繁琐太慢了。
