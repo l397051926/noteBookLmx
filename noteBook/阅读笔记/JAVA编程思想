@@ -928,11 +928,119 @@
             一种线程安全的Map，它不涉及同步加锁
             IdentityHashMap
             使用 == 代替equals()对 键进行比较的三列映射。专为解决特殊问题而设计的
+        17.8.2 SortedMap
+            要实现 Comparator ，null 表示自然排序， subMap(fromKey, toKey)生成子集，headMap(toKey) 小于TOKey的所有键， tailMap(fromKey) 大雨fromKey的子集
+        17.8.3 LinkedHashMap
+            LinkedHashMap三列化了所有元素，但是遍历的时候，又以1插入顺序返回键值对，可以在构造器中设定LinkedHashMap 采用基于访问的最招使用LRU算法，
+    17.9 三列与散列码
+        正确的equals 必须满足5个条件
+        1. 自反性。对任意x，x.equals(x)一定返回true
+        2. 对称性 对任意 x,y x.equals(y) 与 y.equals(x) 结果要一致
+        3. 传递性，对任意x,y,z, 如果有 x.equals(y) 返回true y.equals(z) 范湖true ，则 x.equals(z)一定返回ture
+        4. 一致性，对任意x和y，如果对象中用于等价比较的信息没有改变，那么无论调用x.equalse 结果应该保持一致
+        5. 对任意不是null的x x.equals() 返回一定false
+        17.9.1 理解hashCode()
+        17.9.2 为速度而散列
+            散列的价值在于速度：散列使得查询得以快速进行。由于瓶颈位于键的查询速度，因此解决方案之一就是保持键的排序状态，然后使用Collections.binarySearch()进行查询
+            通过散列直接确定数组对应位置，如果散列好的话，可以保证数组每个位置的list 的大小特别小，因此使得查询速度很快
+            散列表的槽位 通常称为桶位，
+        17.9.3 覆盖hashCode()
+            1.给int变量result赋予某个非零值常量
+            2. 为对象内每个有意义的域f 计算出一个int散列码c
+            3. 合并计算得到的散列码
+            4. 返回result
+            5. 检查hashCode()最后生成的结果，确保相同的对象有相同的散列码
+    17.10 选择接口的不同实现
+        17.10.1 性能测试框架
+        17.10.2 对List的选择
+            Vector避免使用，因为职位了兼容之前的代码，首选应该是ArrayList，如果因为大量插入和删除导致的性能问题，可以使用LinkeList，如果是固定的集合，
+            可以使用Arrays.asList(),也可以使用数组，而CopyOnWriteArrayList是List的一个特殊实现，专门用作并发实现
+        17.10.3 微基准测试的危险
+        17.10.4 对Set选择
+            有效选择TreeSet,HashSet,LinkedHashSet
+            HashSet的基本性能都比TreeSet好，特别是添加和查询上，TreeSet存在的原因就是因为可以维持元素的排序状态,
+            LinkedHashSet比HashSet代价更高；这是维护链表导致的额外开销
+        17.10.5 对Map的选择
+            Hashtable性能和HashMap相当，因为HashMap是用来替代Hashtable的
+            TreeMap要比HashMap要慢，如果需要有序的map可以使用他
+            当然如果需要使用的话 默认最好还是HashMap，只有当需要排序时，在将HashMap专程TreeMap，除非你需要时时保证顺序
+            LinkedHashMap要比HashMap慢一点，因为它维护散列数据结构的同事还要维护链表，保证插入顺序
+            IdentityHashMap具有完全不同的性能，因为它使用==而不是equals来比较元素
+            HashMap的性能因子
+            容量：表中的桶位数
+            初始容量： 表在创建时所拥有的的桶位数，
+            尺寸： 表中当前存储的项数
+            负载因子：表示当福仔情况达到福仔因子水平时，会增加容量桶的为数，负载轻表示冲突的可能性小，因此对插入和查找都是最理想的
+                容器扩容后悔重新将现有对象分步到新的桶位几种（再散列）
+            HashMap 默认负载因子0.75
+            如果知道HashMap的容量，那么初始容量将可以避免自动再散列的开销
+        17.11 实用方法
+            Collections拥有许多静态方法
+            checkedCollection, checkedList, checkedMap, checkedSet, checkedSortedMap,checkedSorteSet
+            产生Collection或者Collection的具体子类型的动态类型安全的视图。在不可能实用静态检查版本时实用这些方法
+            max() min()
+            返回参数Collection中最大或最小的元素，采用Collection内置的自然比较方法
+            max(colection,comparator),min(colection,comparator)
+            返回参数Collectionz中最大或最小的元素，采用Comparator进行比较
+            indexOfSubList(source, target)
+            返回target在source中第一次出现的位置，或者找不到返回-1
+            lastIndexOfSubList(source, target)
+            返回target在source中最后一次出现的位置，或者找不到返回-1
+            replaceAll(List ,oldVal, newVal)
+            实用 newVal替换所有的oldVal
+            reverse(List)
+            逆转里边的元素
+            reverseOrder()
+            返回一个Compartor,它可以逆转实现了Comparator的对象集合的自然顺序，第二个版本可以逆转所提供的Comparator的顺序
+            rotate(list, int distance)
+            所有元素向后移动distance个位置，将末尾的元素循环到前面来
+            shuffle(List) shuffle(List, Random)
+            随机改变指定列表的顺序，第一种提供了自己的最忌机制，第二种可以使用自己的随机机制
+            sort(List),sort(List,Comparator)
+            使用list中的自然顺序排序，第二种可以自己指定排序规则
+            copy(List dest, List src)
+            将stc中的元素复制到dest中
+            swap(list, int i ,int j)
+            交换list中位置i与位置j的元素
+            fill（list,T x）
+            用对象 x替换list中所有元素
+            nCopies(int n,T x)
+            返回大小为n的List,此List不可改变，其中的引用都指向x
+            disjoint(Collection, Collection)
+            当两个集合没有任何相同元素时，返回true
+            frequency(Collection,Object x)
+            返回Collection中等于x的元素个数
+            emptyList(),emptyMap(),emptySet()
+            返回不可变的空List,Map或Set,这些方法都是泛型的，因此所产生的结果将被参数化为所希望的类型
+            singletom(T x),singletonList(T x),singletonMap(K key,V value)
+            产生不可变的Set,List,Map 它们都只包含基于所给定参数的内容而形成的单一项
+            list
+            产生一个ArrayList,它包含的元素顺序，与返回这些元素的顺序相同，用来转换遗留老代码
+            enumeration
+            为参数生成一个旧试的Enumeration
+            17.11.1 List的排序和查询
+            17.11.3 Collection或Map的同步控制
+                Collections.synchronizedMap， synchronizedList, synchronizedSet, synchronizedSortedMap
+                快速报错
+                当你使用迭代器时，向容器插入时 就报错了，因为破坏了容器
+                ConcurrentHashMap,CopyOnWrieArrayList,CopyOnWriteArraySet都可以避免这个问题
+        17.12 持有引用
+            抽象类 Reference
+            SoftReference,WeakReference,PhantomReference
+            SoftReference 用于实现内存敏感的高速缓存
+            Weakreference 是为实现“规范映射” 而设计的，它不方案垃圾回收器回收映射的键 或者 值规范映射中对象的实例可以在程序的多处被同时使用
+            Phantomreference 用以调度回收前的清理工作，它比java终止机制更灵活
+            ReferenceQueue 总是生成一个包含null对象的Reference
+            17.12.1 WeakHashMap
+                它被用来保存WeakReference,
+        17.13 Java 1.0/1.1
+            17.13.1 Vector和Enumeration
+            17.13.2 Hashtable
+            17.13.3 Stack
+            17.13.4 BitSet
+                如果要高效率地存储大量“开、关”信息，BitSet是很好的选择。不过它的效率仅是对空间而言，如果需要搞笑的访问时间，BitSet比本地数组稍慢了一点
 
-
-
-
-
+        17.14 总结
 
 
 
