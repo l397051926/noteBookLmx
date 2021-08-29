@@ -1050,7 +1050,210 @@
         18.1.1 目录列表器
             使用 File 以及 FilenameFilter
         18.1.2 目录实用工具
+        18.1.3 目录的检查及创建
+            f.getAbsolutePath(), f.canRead(), f.canWrite(), f.getName(), f.getParent(), f.getPath(), f.length()
+            f.lastModified(), f.isFile(), f.isDirectory(), f.exists(), f.mkdirs(), f.delete()
 
+    18.2 输入和输出
+        18.2.1 InputStream
+            InputStream的作用是永红来表示那些从不同数据源产生输入的类，包括
+            1. 字节数组
+            2. String对象
+            3. 文件。
+            4. 管道，工作方式与实际管道像是，即 从一段输入，从另一端输出
+            5. 一个由其他种类的流组成的序列，以便我们可以将它们手机合并到一个流内
+            6. 其他数据源，如Internet链接等
+            InputStream 常见类型
+            1. ByteArrayInputStream
+                允许将内存的缓冲区当做InputStream
+                缓冲区，字节将从中取出作为一种数据源：将其与FilterInputStream对象项链以提供有用接口
+            2. StringBufferInputStream
+                将String转换成InputStream
+                字符串。底层实现实际使用StringBUffer作为一种数据源：将其与FillterInputStream对象项链以提供游泳接口
+            3. FileInputStream
+                用于从文件中读取信息
+                字符串，表示文件名，文件或FileDescriptor对象， 作为一种数据源：将其与FilterInputStream对象项链以提供游泳接口
+            4. PipedInputStream
+                产生用于写入相关PipedOutputSteam的数据。实现管道化的概念
+                PipedOutputStream 作为多线程中的数据源：将其与FilterInputStream对象项链以提供游泳接口
+            5. SequenceInputStream
+                将两个或多个InputStream对象转换成单一InputStream
+                两个InputStream对象或一个容纳InputStream对象的容器Enumeration，作为一种数据源：将其与FilterInputStream对象相连以提供有用接口
+            6. FilterInputStream
+                抽象类，作为“装饰器”的接口。其中“装饰器”为其他的InputStream类提供有用功能
+        18.2.2 OutputStream
+            1. ByteArrayOutputStream
+                在内存中创建缓冲区。所有送往“流”的数据都要防止在缓冲区
+                缓冲区初始化尺寸（可选的）用于指定数据的目的地：将其与Filter-OutputStream对象相连以提供游泳接口
+            2. FileOutputStream
+                用于将信息写至文件
+                字符串，表示文件名，文件或FileDescriptor对象， 指定数据的目的地，将其与FilterOutputStream对象相连以提供游泳接口
+            3. PipedOutputStream
+                任何写入其中的信息都会自动作为相关PipedInputStream的输出。实现“管道化”概念
+                PipedInputStream 指定用于多线程的数据的目的地：将其与FilterOutputStream对象相连以提供有用接口
+            4. FilterOutputStream
+                抽象类，作为装饰器的接口
+    18.3 添加属性和有用的接口
+        FilterInputStrem和FilterOutputStream是用来提供装饰器类接口以控制特定输入流和输出流的两个类，他们的名字并不是很直观。FilterInputStream和FilterOutputStream分别自I/O类库中的基类InputStream和OutputStream派生而来，这两个类是装饰器的必要条件
+        18.3.1 通过FilterInputStream从InputStream读取数据
+            FilterInputStream类型
+            1. DatainputStream
+                与DataOutputSteram搭配使用，因此我们可以按照可移植方式从流读取基本数据类型
+                InputStream 包含用于读取基本类型数据的全部接口
+            2. BufferedInputStream
+                使用它可以防止每次读取时都得进行实际写操作。代表"使用缓冲区"
+                InputStream，可以指定缓冲区大小（可选的） 本质上不提供接口，只不过是向进程中添加缓存区所必须的。与接口对象搭配
+            3. LineNumberInputStream
+                跟中输入流中的行号；可调用getLineNumber()和SetLineNumber(int)
+                InputStream 仅增加了行号，因此可能要与接口对象搭配使用
+            4. PushbackInputStream
+                具有“能弹出一个字节的缓冲区”。因此可以将督导的最后一个字符回退
+                InputStream 通常作为编译器的扫描器，之所以包含在内是因为java编译器的需要，我们可能永远不会用到
+        18.3.2 通过FilterOutPutStream向OutputStream写入
+            FilterOutputStream类型
+            1. DataOutputStream
+                与DataInputStream搭配使用，因此可以按照可移植方式向流中写入基本类型数据
+                OutputStream 包含用于写入基本类型数据的全部接口
+            2. PrintStream
+                用于产生格式化输出。其中DataOutputStream处理数据的存储，PrintStream处理显示
+                OutputStream,可以用boolean值指示是否在每次换行时清空缓冲区应该是对OutputStream对象的final封装。可能会经常使用到它
+            3. BufferedOutputStream
+                使用它以避免每次发送数据时都要进行实际的写操作。代表"使用缓冲区"。可以调用flush()清空缓冲区
+                OutputStream,可以指定缓冲区大小， 本质上并不提供接口，只不过是向进程中添加缓冲区所必须的。与接口对象搭配
+    18.4 Reader和Writer
+        Reader和Writer则提供兼容Unicode与面向字符的I/0功能
+        RW和IO的区别 主要是新旧上和对国际上的支持 IO 主要是支持8字接的，而Unicode是16字节的，因此RW的诞生也是如此
+        18.4.1 数据的来源和去处
+            如果可以，尽量是使用RW 来进行操作文件，如果实在不行比如zip等文件则使用IO 来处理
+            RW和IO两者的对应关系
+            InputStream / InputStreamReader
+            OutputStream / OutputStreamWriter
+            FileInputStream / FileReader
+            FileOutputStream / FileWriter
+            StringBufferInputStream(已弃用) / StringReader
+            （无相应的类） / StringWriter
+            ByteArrayInputStream / CharArrayReader
+            ByteArrayOutputStream / CharArrayWriter
+            PipedInputStream / PipedReader
+            PipedOutputStream / PipedWriter
+        18.4.2 更改流的行为
+            对于IO 我们回使用FilterInputStream和FilterOutputStream来装饰器修饰对应Reader和Writer层次结构也是相似的
+            FilterInputStream / FilterReader
+            FilterOutputStream / FilterWriter
+            BufferedInputStream / BufferedReader
+            BufferedOutputStream / BufferedWriter
+            DataInputStream / DataInputStream 畜类使用使用readLine()，应该用BufferedReader
+            PrintStream / PrintWriter
+            LineNumberInputStream(已弃用) / LineNumberReader
+            StreamToenizer / StreamTokenizer
+            PushbackInputStream / PushbackReader
+        18.4.3 未发生变化的类
+            DataOutputStream File RandomAccessFile SequenceInputStream
+    18.5 自我独立的类： RandomAccessFile
+        这个类使用与由大小已知的记录组成的文件，所以我们可以使用seek()将记录从一处转义到另一处
+        在1.4时候 RandomAccessFile的大多数功能被nio存储映射文件所取代
+    18.6 I/O流的常用使用方式
+        18.6.1 缓冲输入文件
+        18.6.2 从内存中输入
+        18.6.3 格式化的内存输入
+            使用DataInputStream
+        18.6.4 基本的文件输出
+            使用PrintWriter 添加辅助构造器 对文本文件输出的快捷方式
+        18.6.5 存储和恢复数据
+            使用DataOutputStream写入数据，使用DataInputStream恢复数据
+        18.6.6 读写随机访问文件
+        18.6.7 管道流 PipeInputStream,PipedOutputStream,PipedReader及PipedWriter
+    18.7 文件读写的实用工具
+        18.7.1 读取二进制文件
+    18.8 标准IO
+        标准IO的意义在于：我们可以很容易滴把程序串联起来，一个程序的标准输出可以称为另一个程序的标准输入。
+        18.8.1 从标准输入中读取
+        18.8.2 将System.out换换成PrintWriter
+        18.8.3 标准I/O重定向
+    18.9 进程控制
+    18.10 新I/O
+        速度提高来自于所使用的结构更接近于操作系统执行I/O的方式：通道和缓冲器
+        18.10.1 转换数据
+            java.nio.CharBuffer
+        18.10.2 获取基本类型
+            asCharBuffer(), asShortBuffer()
+        18.10.3 视图缓冲器
+            可以让我们通过某个特定的基本数据类型的视图查看其底层的ByteBuffer
+            字节存放次序
+        18.10.4 用缓冲器操纵数据
+        18.10.5 缓冲器的细节
+            Buffer由数据和可以搞笑滴访问及操作这些数据的四个索引组成，这四个索引是：mark(标记),position(位置),limit(界限),capacity(容量)
+            1. capacity()
+                返回缓冲区容量
+            2. clear()
+                清空缓冲区，将position设置为0，limit设置为容量。我们可以调用此方法覆写缓冲区
+            3. flip()
+               将limit设置为position, position设置为0，此方法用于准备从缓冲区读取已经写入的数据
+            4. limit
+                返回limit值
+            5. limit(int lim)
+                设置limit值
+            6. mark()
+                将mark设置为position
+            7. position(int pos)
+                设置position值
+            8. position
+                返回position值
+            9. remalning()
+                返回(limit -position)
+            10. hasRemaining()
+                若有结余position和limit之间的元素，则返回true
+            【看图】
+        18.10.6 内存映射文件
+            性能
+        18.10.7 文件加锁
+            FileLock() 或 lock() 可以对整个文件进行加锁
+            映射文件的部分加锁
+            可能需要对这种巨大的文件进行部分加锁，以便其他进程可以修改危急中未被加锁的部分，数据库就是这种设计
+            线程类 LockAndModify 创建了缓冲区和用于修改的slice()
+    18.11 压缩
+        可以使用InputStreamReader和OutputStreamWriter两种类型转换
+        压缩类
+        1. CheckedInputStream
+            GetCheckSum()为任何InputStream产生校验和
+        2. CheckedOutputStream
+            GetCheckSum() 为任何OutputStream产生校验和
+        3. DeflaterOutputStream
+            压缩类的基类
+        4. ZipOutpuStream
+            用于将数据压缩成Zip文件格式
+        5. GZIPOutgputStream
+            用于将数据压缩成GZIP文件格式
+        6. InflaterInputStream
+            解压缩的基类
+        7. ZipInputStream
+            用于解压缩Zip文件格式的数据
+        8. GZIPInputStream
+            用于解压缩GZIP文件格式的数据
+        18.11.1 用GZIP进行简单压缩
+            new BufferedReader(new FileReader(path))
+            new BufferedOOutputStream(new GZIPOutgputStream(new FileOutputStream(test.gz)))
+            new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(test.gz))))
+        18.11.2 用Zip进行多文件保存
+            Adler32 它快一些， CRC32 慢一些，但更准确
+            csum =  new CheckedOutputStream(f, new Adler32())
+            new ZipOutputStream(csum)
+            ....
+        18.11.3 java档案文件
+    18.12 对象序列化
+        序列化的意义 1. 用于将对象持久化的保存你起来，不因程序挂掉而消失，2.用于远程方法调用
+        18.12.1 寻找类
+        18.12.2 序列化的控制
+            transient 关键字
+            当我们虚序列化进行控制时，可能某个特定子对象不想让Java的序列化机制自动保存与恢复，它的意思是 不用麻烦你保存或恢复数据--我自己会处理
+            版本控制
+            支持度并不好
+        18.12.3 使用 “永久性”
+    18.13 XML
+    18.14 Preferences
+        Preferences 与对象序列化相比，前者与对象持久性更密切，因为它可以自动存储和读取信息
+        Prefereneces 是一个键-值集合，存储在一个节点层次结构中
+    18.15 总结
 
 
 
