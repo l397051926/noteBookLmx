@@ -1287,9 +1287,49 @@
         19.11.3 使用EnumMap分发
         19.11.4 使用二维数组
 
-
-
-
-
+第二十章 注解
+    注释（也被称为元数据）为我们在代码中添加信息提供了一种形式化的方法，使我们可以在稍后某个时刻非常方便地使用这些数据
+    20.1 基本语法
+        20.1.1 定义注释
+        @Target(ElementType.METHOD)
+        @rETENTION(RetenionPliicy.RuTIME)
+        public @interface Test{}
+        元注解 @Target 定义你的注解将应用于什么地方
+        @Rectetion 定义该注解在哪一个级别可用 源码中（SOURCE） 类文件中(CLASS) 运行时（RUNTIME）
+        没有元素的注解 叫做标记注解
+        20.1.2 元注解
+            1.Target
+                CONSTRUCTOR:构造器的声明
+                FIELD:域声明
+                LOCAL_VARIABLE:局部变量声明
+                METHOD：方法声明
+                PACKAGE：包声明
+                PARAMETER：参数声明
+                TYPE：类，接口或enmu声明
+            2. Retention
+                表示需要在什么级别保存该注解信息。可选的RetentionPolicy参数包括
+                SOURCE:注解将被编译器丢掉
+                CLASS：注解在class文件中可用，但会被VM丢弃
+                RUNTIME：VM将在运行期也保留注解，因此可以通过反射机制读取注解的信息。
+            3. Documented
+                此注解包含在Javadoc中
+            4. Inherited
+                允许子类继承父类中的注解
+    20.2 编写注解处理器
+        20.2.1 注解元素
+        20.2.2 默认值限制
+            使用default 来进行配置
+        20.2.3 生成外部文件
+        20.2.4 注解不支持继承
+        20.2.5 实现处理器
+    20.3 使用apt处理注解
+        注解处理工具apt，这是sun为了帮助注解的处理过程而提供的工具。由于这是该工具第一版，功能比较基础
+    20.4 将观察者模式用于apt
+    20.5 基于注解的单元测试
+        20.5.1 将@Unit用于泛型
+        20.5.2 不需要任何“套件”
+        20.5.3 实现@Unit
+        20.5.4 移除测试代码
+    20.6 总结
 
 
