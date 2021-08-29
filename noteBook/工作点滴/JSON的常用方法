@@ -1,0 +1,2 @@
+@JSONField 格式化输出时候使用
+ @JSONField(jsonDirect = true)   // 如果数据是string 会进一步格式化json格式
