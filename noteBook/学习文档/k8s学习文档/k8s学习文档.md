@@ -14,7 +14,7 @@ configMap 也可以 简称 cm 给pod提供配置文件，其实是给镜像提�
 master k8s master 节点  
 node k8s 上的 node 节点  
 其他如果涉及在补充，了解以上 就可以构建一套 服务了， 下面提供一个概念图 。  
-![概念图](./image/gainiantu.png)
+![概念图](image/gainiantu.png)
 
 
 #3.k8s 常用命令

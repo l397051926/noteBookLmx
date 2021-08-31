@@ -64,7 +64,7 @@
         DATE_FORMAT(‘2018/6/6’,‘%Y 年%m 月%d 日’)  -> 2018 年06 月06 日
 
     4. 日期格式表
-![日期格式表](./image/dateFormat.png)
+![日期格式表](image/dateFormat.png)
         
 ### 条件表达式
     1. sql 语句中使用 if-then-else 逻辑
@@ -87,7 +87,7 @@ WHEN 'SA_REP' THEN 1.20*salary
 ELSE salary END "REVISED_SALARY"
 FROM employees;
 ```
-![caseDemo](./image/caseDemo.png)
+![caseDemo](image/caseDemo.png)
 
 #数据处理-增删改
 

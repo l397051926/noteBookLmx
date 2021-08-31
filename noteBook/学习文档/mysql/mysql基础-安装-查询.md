@@ -139,7 +139,7 @@ FROM 标识从哪个表中选择数据
 
 #组函数
     分组函数作用于一组数据，并对一组数据返回一个值
-   ![组函数](./image/groupMath.png)
+   ![组函数](image/groupMath.png)
 ## 组函数类型
     1. AVG() 
         可以对数值类型使用
@@ -161,7 +161,7 @@ FROM 标识从哪个表中选择数据
     [ORDER BY column];
 
 ## 分组数据
-   ![分组函数](./image/groupByMath.png)
+   ![分组函数](image/groupByMath.png)
    
 ## GROUP BY 子句语法
     1. 可以使用GROUP BY 子句将表中的数据分成若干组
@@ -182,7 +182,7 @@ FROM 标识从哪个表中选择数据
     GROUP BY department_id ;
     
 ## 使用多个列分组
-   ![多个列分组](./image/manyCountGroup.png)
+   ![多个列分组](image/manyCountGroup.png)
     
     1.在group by 子句中包含多个列
     SELECT department_id dept_id, job_id, SUM(salary)
@@ -250,8 +250,8 @@ WHERE beauty.`boyfriend_id`=boys.id;
             左外连接 left join on
             右外连接 right join on
     join 连接总结
-![join连接总结](./image/joinAll.png)
+![join连接总结](image/joinAll.png)
 ---
-![join连接总结](./image/joinAll2.png)
+![join连接总结](image/joinAll2.png)
 
 
