@@ -1,0 +1,14 @@
+java 解决跨域问题：
+
+可以在具体函数使用这个注解
+
+@CrossOrigin
+
+@GetMapping("/query")
+@CrossOrigin
+public Result getUserList(
+@RequestParam("userName") String userName
+){
+return userService.query(userName);
+}
+

@@ -1,0 +1,18 @@
+idea 微服务 各个服务管理， 使用下面有个 services 即可，也可以在 .ida  workspace中 增加如下参数
+<component name="RunDashboard">
+<option name="configurationTypes">
+<set>
+<option value="SpringBootApplicationConfigurationType" />
+</set>
+</option>
+<option name="ruleStates">
+<list>
+<RuleState>
+<option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+</RuleState>
+<RuleState>
+<option name="name" value="StatusDashboardGroupingRule" />
+</RuleState>
+</list>
+</option>
+</component>

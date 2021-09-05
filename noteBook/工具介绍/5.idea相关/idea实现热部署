@@ -1,0 +1,46 @@
+1.在 pom 文件 build 下增加这些
+-----------------------------------------------------
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <url>http://10.0.2.200:8080/manager/text</url>
+                    <path>/ROOT</path>
+                    <username>admin</username>
+                    <password>admin</password>
+                    <update>true</update>
+                    <uriEncoding>UTF-8</uriEncoding>
+                </configuration>
+            </plugin>
+
+--------------------------------------------------------
+url 为服务器的tomcat的地址
+path 为服务器你要打包的 war包名称
+username 为tomcat的 用户名
+password 为tomcat的 密码
+-------------------------------------------------------------
+2.修改tomcat的用户名 和密码
+-------------------------------------------------------------
+vim conf/tomcat-users.xml
+-------------------------------------------------------------
+增加 以下信息
+-------------------------------------------------------------
+<role rolename="manager-gui" />
+<role rolename="manager-script" />
+<user username="admin" password="admin" roles="manager-gui, manager-script" />
+-------------------------------------------------------------
+注意： 密码和用户名 要和 pom 文件下匹配
+-------------------------------------------------------------
+3. 查看服务端口
+vim conf/server.xml
+查看服务的端口 ，也要和pom文件的配置对应
+
+-------------------------------------------------------------
+4.查看是否有 manage 服务
+cd webapps/
+是否 manager的文件服务 ，若没有自行查找，需要导入，属于tomcat 原生自带服务
+
+说明：
+热部署其实就是利用 tomcat的后台配置服务 ，手动上传war包功能，只要配置够 在 idea的maven 下有个 maven 的
+[tomcat7:redeploy] 操作 就可以 一键部署服务了，

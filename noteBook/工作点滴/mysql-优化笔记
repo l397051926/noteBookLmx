@@ -1,0 +1,29 @@
+mysqldump -uroot -p test > /backup/mysqldump/test.db
+
+
+mysql 优化记录
+
+首先根据 查看 mysql的连接数 和mysql的 慢查询次数
+SHOW STATUS LIKE 'Connections';
+SHOW STATUS LIKE 'Slow_queries';
+
+其次 可以使用 关键字 对所执行的sql 语句进行分析 里如
+EXPLAIN SELECT * FROM user;
+语句相关说明
+select_type：标识select语句的类型
+table：表示查询的表
+type：表示表的连接类型
+possible_keys:possible_keys列指出mysql能使用那个索引在该表中找到行
+key：表示查询实际使用到的索引，如果没有选择索引
+key_len：表示mysql选择索引字段按照字节计算的长度
+ref:表示使用那个列或者常数或者索引一起来查询记录
+rows:显示mysql在表中进行查询必须检查的行数
+Extra:该列mysql在处理查询时的详细信息
+
+分析表后 针对 不同的表 构建不同的索引 提高速度
+
+索引不起作用的语句
+使用like关键字的查询语句。在使用like关键字进行查询的查询语句中，如果匹配字符串的第一个字符为"%"，索引不会起作用。只有"%"不在第一个位置，索引才会起到作用
+使用多列索引的查询语句。mysql可以为多个字段创建索引。一个索引可以包括16个字段。对于多列索引，只有查询条件中使用了这些字段中第1个字段的时候，索引才会被使用
+使用or关键字的查询语句。使用语句的查询条件中只有or关键字，且or前后的两个条件中的列都有索引时，查询中才使用索引。否则，查询将不适用索引。
+order by排序应该遵循最佳左前缀查询，如果是使用多个索引字段进行排序，那么排序的规则必须相同（同是升序或者降序），否则索引同样会失效。

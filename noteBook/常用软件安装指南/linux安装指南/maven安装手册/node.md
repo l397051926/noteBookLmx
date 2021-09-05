@@ -9,3 +9,5 @@ export PATH=$MAVEN_HOME/bin:$PATH
 ```
 5. source /etc/profile
 6. 测试 mvn -v
+
+
