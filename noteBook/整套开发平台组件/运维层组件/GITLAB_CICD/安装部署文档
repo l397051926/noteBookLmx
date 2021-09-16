@@ -1,0 +1,33 @@
+前篇文章GitLab CI持续集成-GitLab Runner主要介绍了持续集成，以及GitLab CI持续集成的环境，这边文章主要介绍下GitLab Runner的安装以及使用。
+需要添加gitlab官方库：
+
+ # For Debian/Ubuntu/Mint
+ curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh | sudo bash
+
+ # For RHEL/CentOS/Fedora
+ curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh | sudo bash
+
+ 通过命令安装
+ # MacOS
+ sudo brew install gitlab-ci-multi-runner
+  # For Debian/Ubuntu/Mint
+
+  sudo apt-get install gitlab-ci-multi-runner
+
+  # For RHEL/CentOS/Fedora
+  sudo yum install gitlab-ci-multi-runner
+
+gitlab-runner 注册
+项目主页 -> Sttings -> CI/CD -> Runners Expand
+
+在服务器上使用命令 注册
+gitlab-runner register
+输入gitlab的服务URL，这个使用的是https://gitlab.com/
+输入gitlab-ci的Toekn，获取方式参考上图
+关于集成服务中对于这个runner的描述
+给这个gitlab-runner输入一个标记，这个tag非常重要，在后续的使用过程中需要使用这个tag来指定gitlab-runner
+是否运行在没有tag的build上面。在配置gitlab-ci的时候，会有很多job，每个job可以通过tags属性来选择runner。这里为true表示如果job没有配置tags，也执行
+是否锁定runner到当前项目
+选择执行器，gitlab-runner实现了很多执行器，可用在不同场景中运行构建，详情可见GitLab Runner Executors，这里选用Shell模式
+
+接下来就配置 gitlab.ci.yaml 文件了

@@ -1,0 +1,80 @@
+stages:
+  - package
+  - build
+  - deploy
+
+services:
+  - name: docker:18.09.7-dind
+    command: ["--"]
+
+variables:
+  APP_NAME: ting
+  CONTAINER_IMAGE: $CI_DOCKER_MLAMP_REGISTRY/cem/$APP_NAME
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
+
+## 打包Jar
+package:
+  stage: package
+  image: maven:3.6-openjdk-8
+  only:
+    - develop
+    - test
+    - tags
+  tags:
+    - dd
+  services: []
+  before_script:
+    - TAG="$CI_COMMIT_REF_NAME"
+  script:
+    - mvn clean package
+  cache:
+    policy: push
+    key: $CI_PROJECT_NAME-$CI_COMMIT_BRANCH-$CI_COMMIT_SHA-$CI_COMMIT_REF_NAME
+    paths:
+      - target/ing.jar
+
+## 构建镜像
+build:
+  stage: build
+  only:
+    - develop
+    - test
+    - tags
+  tags:
+    - dd
+  cache:
+    policy: pull
+    key: $CI_PROJECT_NAME-$CI_COMMIT_BRANCH-$CI_COMMIT_SHA-$CI_COMMIT_REF_NAME
+    paths:
+      - target/ing.jar
+  before_script:
+    - TAG="$CI_COMMIT_REF_NAME"
+    - docker login -u user -p pws tt
+  script:
+    - docker pull image:latest || true
+    - |
+      docker build --build-arg  xxxx
+    - docker push imag:$TAG
+    - docker push imag:latest
+
+deploy-dev-qa:
+  image: dd/cem/kubectl:v1.0.0
+  stage: deploy
+  services: []
+  cache: {}
+  tags:
+    - aio-runner
+  only:
+    - develop
+  before_script:
+    - TAG="develop"
+    - shopt -s expand_aliases
+    - alias k="kubectl -n sfa --server=\"${CI_K8S_QA_API_URL}\" --token=\"$CI_K8S_QA_SFA_TOKEN\" --insecure-skip-tls-verify"
+  script:
+    - DEPLOYMENT=`cat "./deploy/k8s/$TAG/$APP_NAME.yml"`
+    - DEPLOYMENT_NAME="$APP_NAME-$TAG-deployment"
+    # 创建 deployment
+    - k get deployment $DEPLOYMENT_NAME 2>/dev/null || echo "$DEPLOYMENT" | k apply -f -
+    # tag未变更，通过修改 labels 触发镜像更新
+    - k patch deployment $DEPLOYMENT_NAME -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
