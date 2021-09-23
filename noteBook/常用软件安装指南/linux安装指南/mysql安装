@@ -1,0 +1,119 @@
+下载地址：https://dev.mysql.com/downloads/mysql/5.7.html#downloads
+
+wget https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.35-linux-glibc2.12-x86_64.tar.gz
+
+解压
+tar -xvf mysql-5.7.26-linux-glibc2.12-x86_64.tar
+
+再移动并重命名一下
+mv mysql-5.7.26-linux-glibc2.12-x86_64 /usr/local/mysql
+
+创建mysql用户组和用户并修改权限
+groupadd mysql
+useradd -r -g mysql mysql
+
+创建数据目录并赋予权限
+mkdir -p  /data/mysql              #创建目录
+chown mysql:mysql -R /data/mysql   #赋予权限
+
+配置my.cnf
+vim /etc/my.cnf
+
+内容如下
+[mysqld]
+bind-address=0.0.0.0
+port=3306
+user=mysql
+basedir=/usr/local/mysql
+datadir=/data/mysql
+socket=/tmp/mysql.sock
+log-error=/data/mysql/mysql.err
+pid-file=/data/mysql/mysql.pid
+#character config
+character_set_server=utf8mb4
+symbolic-links=0
+explicit_defaults_for_timestamp=true
+
+初始化数据库
+
+进入mysql的bin目录
+cd /usr/local/mysql/bin/
+
+初始化
+./mysqld --defaults-file=/etc/my.cnf --basedir=/usr/local/mysql/ --datadir=/data/mysql/ --user=mysql --initialize
+
+ 查看密码
+cat /data/mysql/mysql.err
+
+启动mysql，并更改root 密码
+先将mysql.server放置到/etc/init.d/mysql中
+cp /usr/local/mysql/support-files/mysql.server /etc/init.d/mysql
+
+
+启动！！！
+service mysql start
+ps -ef|grep mysql
+
+到这里说明mysql已经安装成功了！！
+
+下面修改密码
+
+首先登录mysql，前面的那个是随机生成的。
+./mysql -u root -p   #bin目录下
+
+再执行下面三步操作，然后重新登录。
+SET PASSWORD = PASSWORD('root');
+ALTER USER 'root'@'localhost' PASSWORD EXPIRE NEVER;
+FLUSH PRIVILEGES;
+
+这时候你如果使用远程连接……你会发现你无法连接。
+
+这里主要执行下面三个命令(先登录数据库)
+use mysql                                            #访问mysql库
+update user set host = '%' where user = 'root';      #使root能再任何host访问
+FLUSH PRIVILEGES;                                    #刷新
+
+ok！！！！MySQL5.7就装好了……坑是真的多……但是如果按这个流程走应该是能顺利装下来的。（因为我装了两遍……）
+如果不希望每次都到bin目录下使用mysql命令则执行以下命令
+ln -s  /usr/local/mysql/bin/mysql    /usr/bin
+
+
+
+Mysql 表名忽略大小写-连接字符集随笔记录
+
+1.参数说明：
+lower_case_table_names=0 表名存储为给定的大小和比较是区分大小写的
+lower_case_table_names = 1 表名存储在磁盘是小写的，但是比较的时候是不区分大小写
+lower_case_table_names=2 表名存储为给定的大小写但是比较的时候是小写的
+unix,linux下lower_case_table_names默认值为 0 .Windows下默认值是 1 .Mac OS X下默认值是 2
+
+2.查看方法：
+# 进入mysql命令行 执行以下任一语句查看：
+show variables like 'lower_case_table_names';
+select @@lower_case_table_names;
+
+3.更改方法：
+更改数据库参数文件my.cnf
+在mysqld下 添加或修改 lower_case_table_names = 1
+之后重启数据库
+
+字符集
+character_ser_client=utf8
+character_set_database=utf8
+character_set_results=utf8
+
+
+
+error while loading shared libraries: libaio.so.1: cannot open shared o错误解决
+在安装mysql时遇到以下错误
+
+执行./mysqld --initialize 后
+./bin/mysqld: error while loading shared libraries: libaio.so.1: cannot open shared object file: No such file or directory
+
+原因是没有安装libaio.so.1，安装即可。
+
+Ubuntu下执行：
+apt-get install libaio1 libaio-dev
+
+Redhat/Fedora/CentOS下执行：
+yum install libaio
