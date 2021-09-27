@@ -1,0 +1,117 @@
+上一篇文章讲述了如何利用Hystrix Dashboard去监控断路器的Hystrix command。
+当我们有很多个服务的时候，这就需要聚合所以服务的Hystrix Dashboard的数据了。这就需要用到Spring Cloud的另一个组件了，即Hystrix Turbine。
+
+一、Hystrix Turbine简介
+看单个的Hystrix Dashboard的数据并没有什么多大的价值，
+要想看这个系统的Hystrix Dashboard数据就需要用到Hystrix Turbine。Hystrix Turbine将每个服务Hystrix Dashboard数据进行了整合。
+Hystrix Turbine的使用非常简单，只需要引入相应的依赖和加上注解和配置就可以了。
+
+三、创建service-turbine
+引入相应的依赖：
+```
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-hystrix-dashboard</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-turbine</artifactId>
+    </dependency>
+
+</dependencies>
+```
+
+在其入口类ServiceTurbineApplication加上注解@EnableTurbine，开启turbine，
+@EnableTurbine注解包含了@EnableDiscoveryClient注解，即开启了注册服务。
+
+```
+@SpringBootApplication
+@EnableEurekaClient
+@EnableDiscoveryClient
+@RestController
+@EnableHystrix
+@EnableHystrixDashboard
+@EnableCircuitBreaker
+@EnableTurbine
+public class ServiceTurbineApplication {
+
+    /**
+     * http://localhost:8764/turbine.stream
+     */
+
+    public static void main(String[] args) {
+        SpringApplication.run( ServiceTurbineApplication.class, args );
+    }
+}
+```
+
+配置文件application.yml：
+```
+server:
+  port: 8764
+
+spring:
+  application:
+    name: service-turbine
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      cors:
+        allowed-origins: "*"
+        allowed-methods: "*"
+
+turbine:
+  app-config: service-hi,service-lucy
+  aggregator:
+    clusterConfig: default
+  clusterNameExpression: new String("default")
+  combine-host: true
+  instanceUrlSuffix:
+    default: actuator/hystrix.stream
+```
+配置文件注解写的很清楚。
+
+四、Turbine演示
+依次开启eureka-server、service-hi、service-lucy、service-turbine工程。
+
+打开浏览器输入：http://localhost:8764/turbine.stream,界面如下：
+依次请求：
+
+http://localhost:8762/hi?name=forezp
+
+http://localhost:8763/hi?name=forezp
+
+打开:http://localhost:8763/hystrix,输入监控流http://localhost:8764/turbine.stream
+
+点击monitor stream 进入页面：
+
+可以看到这个页面聚合了2个service的hystrix dashbord数据。
+
+
+
+
+
