@@ -1,0 +1,14 @@
+1. Block Input Events
+    一个自带的组件，用于阻止输入事件
+    /ui组件/block 添加后 就直接阻止后面
+
+2. 动态创建一个节点，添加Spite组件，然后挂在当前节点下面：
+    let bullet: cc.Node = new  cc.Node():
+    let sprite: cc.Sprite = bullet.addComponent(cc.Sprite);
+    sprite.spriteFrame = this.bulletIcon;
+    bullet.parent = this.node;
+
+3. 动态添加脚本
+    规范命名一下 script 名字
+    // 会提示导入
+    node.addComponent(aaaScript);

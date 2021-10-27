@@ -1,0 +1,197 @@
+1. 可以使用 添加一个空节点， 使用添加组件来构建不同的功能 比如 图片 文本
+    sprite 图片组件
+    label 文本组件
+    可以使用多个组件 组合使用 比如 label + button 就 按钮功能
+
+2. 父子节点 关系
+    捆绑关系  移动父节点 子节点随之移动
+    子节点的 坐标点都是相对于父节点的 坐标
+
+
+3. vscode 程序脚本编辑
+    在程序进行配置后，会使用 vscode 进行编程
+    推荐几个 vscode 编程的 插件 https://www.cnblogs.com/sexintercourse/p/9521946.html
+
+4. 脚本运行原理
+    var comp = new PigScript();
+    node["PigScript"] = comp;
+    comp.onLoad();
+    comp.start();
+
+5. 生命期回调
+    Life-Cycle Callback
+    onLoad() 组件初始化执行
+    start() 第一次激活前执行
+    update() 每贞执行
+    onEnable() 组件启用时调用
+    onDisable() 组件禁用时调用
+    onDestroy 组件销毁时调用
+
+6. 事件处理
+    点击事件 mousedown /mouseup/mousemove...
+    键盘事件 keyup/ keydown
+    触摸事件 touchstart /touchend / touchcancel
+
+7. 调试时 的一些属性
+    重要点 Recompile 重新载入script 的脚本 用于调试
+
+8. typeScript 与js 的对比
+    var a = "aaa"  / let a :string = "aaaa"
+   方法的写法
+    moveLeft(evt) {};
+    moveLeft(evt :ccEvent.EventMouse){}
+    返回值
+      sum(x,y){ return x+ y;}
+      sum(x :number, y:number) :number{ return x+y;}
+
+9.O 属性定义
+    @property 注解 表示是 cocos 里面的属性 ，括号里面可以指定类型
+        @property()
+        label: cc.Label = null;
+    属性有 基本类型  引用类型 两种
+
+10. 基本类型
+    string, number, boolean, bigint
+
+11. 引用类型
+    cc.Node 节点
+    cc.SpriteFrame 图片真资源
+    cc.AudioClip 音频资源
+
+   使用方式： cc.aduioEngine.play(this.audio,this)
+   指定音频 可以将声音拖进去
+
+12. 通过api 访问各个 节点
+    1. 当前节点 this.node: cc.Node
+    2. 父节点 this.node.parent
+    3. 子节点 this.node.children: cc.Node[]
+    4. 全局查找 target = cc.find("Canvas/佩奇/名字")
+    5. 查找子节点 target = cc.find("xx/yy", someNode)
+
+13. 组件获取
+    获取组件
+    node.getComponent(cc.Label)
+    脚本组件
+    node.getComponent("YourScript")
+
+14. 脚本组件的访问
+    let a = node.getComponent("YourScript")
+    a.start()
+
+15. 坐标系
+    Vec2 代表 二维坐标
+    Vec3 代表 三维坐标
+    pos = new cc.Vec2(100,100)
+    pos2 = cc.v2(100,100)
+    *****
+    pos = new cc.Vec3(100,100,100)
+    pos = cc.v3(100,100,100)
+
+    获取一个坐标 getPosition();
+    设置一个坐标 setPosition();
+    节点缩放 setScale
+
+16. 缓动系统
+    直接移动 node.setPosition(cc.v3(1,1,1));
+    缓动移动 cc.tween(node).to(1, {position: cc.v3(1,1,1)}).start();
+                                    ↑  对象 ，可以任意增加属性
+    更多用法
+        1. 多个.to 操作
+        cc.tween(node)
+            .to(1, {position:cc.v3(1,1,1)})
+            .to(1, {rotation:360})
+            .start();
+        cc.tween(node)
+            .to(1,{position: cc.v3(250,120,0), rotation:360})
+            .start();
+
+    区分 to by的区别
+    to :对属性进行绝对值计算，传入最终值
+    by: 对属性进行相对值计算，传入改变值
+        cc.tween(node)
+            .by(1,{position: cc.v3(1,0,0)})
+            .start();
+
+        cc.tween(node).to(duration,props,easing);
+        easing 调整速度快慢 quadOut
+
+17. 动画
+    使用 update 方法 来 制作帧动画， 只要保证每个帧 改变很小 就可以继续
+    update(dt) {}
+        delta time 指的是 上一帧的时间间隔
+        一般 dt 约为 0.016秒 并不是一个精确数字
+    cc.game.setFrameRate(30) 设定 帧数 每秒
+
+18. 状态控制
+    设置一个方向的变量  cc.Vec2 = null;
+
+19. 计时器
+    cocos creator 提供一套计时器 API
+    封装在 cc.Component 中
+    comp.schedule(callback, interval)
+    comp.schedule(callback, interval, repeat, delay)
+    callback 计时器回调
+    interval 每次间隔
+    repeat 重复托少次
+    delay 多少秒后启动
+    停止定时器
+    comp.unschedule(callback)
+
+20. 摇杆相关函数
+    获取方向的方法 用鼠标的 event.getLocation 在转换成相对坐标 Node this.node.convertToNodeSpaceAR
+    使用 相似三角形 x/x1 = y/y1 = r/r1 来计算出 具体位置
+    通过 Math.atan2(y,x) 来计算 度 r
+    通过 r * 180/Math.PI 来计算总共的度数  用 360 - deragee 来算出旋转的度数 如果初始方向不是 向右 在初始化方向
+
+21. 动态图片
+    把一个图片 拆开多张基本图片
+    可以通过 sprite 来自动裁剪 把 trimeType  = none
+
+    构建一个 普通 精灵节点 然后把第一张图片放入进去
+    // 获取一组数据
+    frames: cc.SpriteFrame[] = [];
+    在通过界面操作，把图片放到 里面
+
+22. 图集功能
+    略
+
+23. 动态加载图片
+    cc.resources.load(path,type,onComplete) 运行时 动态加载 资源
+    路径 默认指定 为 assets/resources/icon/汽车   只能为 相对路径
+    类型  cc.SpriteFrame, ccAudioClip
+    回调函数
+
+    实例
+    // 闭包操作方式
+    let self = this;
+    cc.resources.load("icon/骑车", cc.SpiteFrame, function(err, assets){
+        //if (err) {cc.log(err); return;}
+        self.node.getComponent(cc.Sprite).spriteFrame = <cc.SpriteFrame> assets;
+    });
+
+24. 加载多个资源
+    官方文档： 脚本开发指南/获取和加载资源
+    cc.resources.load(paths ....)  指定路径数组[]
+
+    cc.resources.load(path)  path 加载整个路径
+
+25. 触摸事件
+    touchstart, touchmove, touchend ,touchcancel
+    鼠标事件
+    mousedown,mousemove,mouseup,mousewheel,mouseenter,mouseleave
+
+    cc.Event.eventTouch 获取getlocation 是世界坐标
+
+26. 冒泡机制
+    当一个节点收到触摸事件，在处理完之后，该事件会依次上浮到父节点，祖父节点。。
+    细节：
+        同级节点不会收到信息
+        即使子节点不在父节点的区域内，此事件也会给父节点
+        可以阻止冒泡功能 e.stopPropagation();
+        则此事件到此为止，不会继续后面的传递；
+
+27. 遮罩效果
+    使用 widget 组件 ，用来辅助定位使用的 ， 会自动和屏幕大小绑定
+    自学一下吧
+    使用 this.node.active = true 让这部分内容是否展示
+
