@@ -12,3 +12,4 @@
     规范命名一下 script 名字
     // 会提示导入
     node.addComponent(aaaScript);
+
