@@ -1,0 +1,16 @@
+dubbo 是什么
+是一个基于底层RPC 框架的实现，可以通过 RPC 来进行服务之间的通信，常见通信方式有两种，
+1. http 基于注册中心 使用fein 来做服务之间的通信
+2. 使用RPC 更高效的使用，效率据说高于 http 3次握手，来进行服务间的通信
+
+个人比较喜欢第一种，简单 方便 好处理，第二种会复杂一些
+
+使用dubbo的架构形式
+1. consumer 消费中心
+2. api 中间 service，只写接口 不负责实现，
+3. provider 生产者，用来实现api 的接口实现，consumer 可以通过rpc 来调用 provider
+
+具体项目地址参考
+>https://gitee.com/l397051926/canon   dubbo
+
+dubbo 底层实现的话  以后在补充吧

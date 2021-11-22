@@ -1,0 +1,27 @@
+话不多说 博客地址：
+https://blog.csdn.net/u012246458/article/details/77508070
+
+个人使用推荐：
+wangEditor
+js和css实现
+优点：轻量简洁，最重要的是开源且中文文档齐全。设计的UI漂亮。
+插件基本能满足需求，本人推荐使用。
+http://www.wangeditor.com/index.html
+
+使用方式：
+<head>
+<script src="https://cdn.jsdelivr.net/npm/wangeditor@latest/dist/wangEditor.min.js"></script>
+</>
+
+<body>
+    <div id="div1">
+        <p>欢迎使用 <b>wangEditor</b> 富文本编辑器</p>
+    </div>
+</>
+
+<script>
+    const E = window.wangEditor
+    const editor = new E('#div1')
+    // 或者 const editor = new E( document.getElementById('div1') )
+    editor.create()
+</>
